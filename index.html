@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada Python - Roadmap Interativo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            padding: 5px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00d2ff 0%, #3a47d5 100%);
+            height: 30px;
+            border-radius: 50px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .roadmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        /* CSS para Abas */
+        .level-content {
+            display: none; 
+            grid-column: 1 / -1; /* Ocupa a largura total da grid roadmap */
+        }
+        .level-content.active {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Mantém o layout de grid interno */
+        }
+
+        .tabs {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .tab-button {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: background 0.3s ease, transform 0.1s ease;
+            opacity: 0.7;
+        }
+        
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 0.9;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            opacity: 1;
+        }
+        /* FIM CSS para Abas */
+
+
+        .level {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+            animation: fadeInUp 0.6s ease;
+            /* Modificado para que o nível ocupe todo o level-content */
+            grid-column: 1 / -1; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: -20px; /* Ajuste visual para compensar o padding do level-content */
+        }
+        
+        /* Faz o .level em si ocupar 1 coluna, mas os tópicos dentro dele quebram a linha */
+        .level {
+            display: block;
+            margin: 0;
+            padding: 25px;
+        }
+        
+        /* Precisamos que os tópicos internos preencham a largura */
+        .level .topic {
+            width: 100%;
+        }
+
+
+        .level:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .level-title {
+            font-size: 1.5em;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-progress {
+            font-size: 0.9em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+
+        .topic {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #ddd;
+        }
+
+        .topic.completed {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-left-color: #00d2ff;
+        }
+
+        .topic-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .topic.completed .checkbox {
+            background: white;
+            border-color: white;
+        }
+
+        .checkmark {
+            display: none;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .topic.completed .checkmark { display: block; }
+
+        .topic-title { font-weight: bold; flex: 1; }
+
+        .topic-description {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-left: 30px;
+        }
+
+        .topic-buttons {
+            margin-top: 10px;
+            margin-left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-btn, .test-btn-small {
+            border: none;
+            padding: 6px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .info-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .info-btn:hover { background: #764ba2; }
+
+        .test-btn-small {
+            background: #28a745;
+            color: white;
+        }
+
+        .test-btn-small:hover { background: #218838; }
+
+        .topic.completed .info-btn {
+            background: white;
+            color: #667eea;
+        }
+
+        .topic.completed .test-btn-small {
+            background: white;
+            color: #28a745;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 30px auto;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 3% auto;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.4s ease;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .close-btn:hover { transform: rotate(90deg); }
+
+        .modal h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .modal h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .modal ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .modal li { margin-bottom: 10px; }
+
+        .modal pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #667eea;
+            margin: 15px 0;
+        }
+
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+
+        .start-test-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-test-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .question {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .option {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .option.correct {
+            background: #28a745;
+            color: white;
+        }
+
+        .option.incorrect {
+            background: #dc3545;
+            color: white;
+        }
+
+        .submit-test-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .submit-test-btn:hover {
+            background: #218838;
+        }
+
+        .test-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .test-result.pass {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .test-result.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .roadmap { grid-template-columns: 1fr; }
+            .modal-content { margin: 5% 10px; padding: 20px; }
+            .tab-button { font-size: 0.9em; padding: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐍 Jornada Python Developer</h1>
+            <p style="font-size: 1.2em; opacity: 0.9;">Aprenda cada tópico e faça o teste antes de avançar</p>
+            <p>Roadmap: Alex Gonçalves Victorino</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </header>
+        
+        <div class="tabs" id="tabsContainer">
+            </div>
+
+        <div class="roadmap" id="roadmap">
+            </div>
+
+        <button class="reset-btn" onclick="resetProgress()">🔄 Reiniciar Progresso</button>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const roadmapData = [
+            {
+                level: "Fundamentos",
+                icon: "🎯",
+                topics: [
+                    { title: "Instalação e Setup", description: "Python, pip, IDE" },
+                    { title: "Variáveis e Tipos", description: "int, float, string, boolean" },
+                    { title: "Operadores", description: "Aritméticos, lógicos, comparação" },
+                    { title: "Strings", description: "Formatação, métodos, f-strings" },
+                    { title: "Condicionais", description: "if, elif, else" },
+                    { title: "Loops", description: "for, while, break, continue" },
+                    { title: "Listas", description: "Criação, métodos, indexação" },
+                    { title: "Tuplas e Sets", description: "Imutabilidade, conjuntos" },
+                    { title: "Dicionários", description: "Chave-valor, métodos" },
+                    { title: "Funções", description: "def, parâmetros, return" }
+                ]
+            },
+            {
+                level: "Intermediário",
+                icon: "🚀",
+                topics: [
+                    { title: "Funções Avançadas", description: "*args, **kwargs, decorators" },
+                    { title: "Comprehensions", description: "List, dict, set comprehensions" },
+                    { title: "Módulos", description: "Import, criação de módulos" },
+                    { title: "Exceções", description: "try, except, finally" },
+                    { title: "Arquivos", description: "Leitura e escrita" },
+                    { title: "Classes", description: "POO básica" },
+                    { title: "Herança", description: "Super, herança múltipla" },
+                    { title: "Encapsulamento", description: "Private, protected" },
+                    { title: "Polimorfismo", description: "Sobrecarga, sobrescrita" },
+                    { title: "Iteradores", description: "iter, next, yield" }
+                ]
+            },
+            {
+                level: "Avançado",
+                icon: "⚡",
+                topics: [
+                    { title: "Lambda", description: "Funções anônimas" },
+                    { title: "RegEx", description: "Expressões regulares" },
+                    { title: "Datetime", description: "Manipulação de datas" },
+                    { title: "JSON e APIs", description: "Parsing, requests" },
+                    { title: "Threading", description: "Multithreading" },
+                    { title: "Multiprocessing", description: "Process, Pool" },
+                    { title: "Context Managers", description: "with statement" },
+                    { title: "Type Hints", description: "Anotações de tipo" },
+                    { title: "Testing", description: "unittest, pytest" },
+                    { title: "Virtual Env", description: "venv, pipenv" }
+                ]
+            },
+            {
+                level: "Desenvolvimento Web Backend",
+                icon: "🌐",
+                topics: [
+                    { title: "Introdução a Servidores", description: "HTTP, REST, WSGI/ASGI" },
+                    { title: "Flask Básico", description: "Rotas, Templates, Requisições" },
+                    { title: "Django Básico", description: "Modelos, Views, URLs, Admin" },
+                    { title: "Banco de Dados (SQL)", description: "CRUD, Conexão com DBs" },
+                    { title: "ORMs (SQLAlchemy/Django ORM)", description: "Mapeamento Objeto-Relacional" },
+                    { title: "API RESTful", description: "Serialização, Endpoints" },
+                    { title: "Autenticação", description: "JWT, Sessões, OAuth" },
+                    { title: "Testes de API", description: "Unitários e de Integração" },
+                    { title: "Deploy", description: "Docker, Gunicorn, Cloud Services (Heroku/AWS)" }
+                ]
+            }
+        ];
+
+        const topicContent = {
+            // ######################################################################
+            // NÍVEL 0: FUNDAMENTOS (10 QUESTÕES CADA)
+            // ######################################################################
+            "0-0": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li>Baixar Python de python.org (versão 3.8+)</li><li>Verificar instalação: <code>python --version</code></li><li>pip: gerenciador de pacotes</li><li>IDE: VSCode (gratuito) ou PyCharm</li><li>Primeiro programa: print("Hello World")</li></ul><h3>💻 Exemplo:</h3><pre># meu_primeiro_codigo.py\nprint("Olá, Python!")\nnome = input("Seu nome: ")\nprint(f"Bem-vindo, {nome}!")</pre>`,
+                test: [
+                    { q: "Qual comando é usado para verificar a versão instalada do Python?", opts: ["python check", "python --version", "check python", "py -v"], a: 1 },
+                    { q: "O que é 'pip' no ecossistema Python?", opts: ["Um tipo de dado", "Gerenciador de pacotes", "Biblioteca gráfica", "Ambiente virtual"], a: 1 },
+                    { q: "Qual IDE é comumente recomendada por ser gratuita e amplamente utilizada?", opts: ["Eclipse", "Sublime Text", "PyCharm Community", "VSCode"], a: 3 },
+                    { q: "Para que serve a função 'print()'?", opts: ["Receber dados do usuário", "Salvar um arquivo", "Exibir uma mensagem no console", "Executar um loop"], a: 2 },
+                    { q: "Qual o principal arquivo de download no site python.org para começar?", opts: ["O interpretador", "A documentação", "O PEP 8", "O framework Django"], a: 0 },
+                    { q: "O que é um 'script' em Python?", opts: ["Um pacote de terceiros", "Um arquivo .py contendo código", "Um comando do terminal", "Uma variável global"], a: 1 },
+                    { q: "Qual é a extensão padrão de um arquivo de código Python?", opts: [".txt", ".py", ".p", ".pth"], a: 1 },
+                    { q: "Qual comando deve ser usado no terminal para instalar uma biblioteca com pip?", opts: ["install library_name", "pip add library_name", "python install library_name", "pip install library_name"], a: 3 },
+                    { q: "O que é uma IDE?", opts: ["Interface de Design Estático", "Ambiente de Desenvolvimento Integrado", "Ferramenta de Edição de Dados", "Processador de Interação Dinâmica"], a: 1 },
+                    { q: "Qual o erro mais comum ao tentar rodar um script Python antes de instalar o interpretador?", opts: ["NameError", "SyntaxError", "Comando 'python' não encontrado", "ZeroDivisionError"], a: 2 }
+                ]
+            },
+            "0-1": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li><strong>int:</strong> números inteiros (10, -5)</li><li><strong>float:</strong> decimais (3.14, 2.5)</li><li><strong>str:</strong> texto ("Olá", 'Python')</li><li><strong>bool:</strong> True ou False</li><li>type(): verificar tipo</li><li>Conversão: int(), float(), str()</li></ul><h3>💻 Exemplo:</h3><pre>nome = "Ana"\nidade = 25\naltura = 1.65\nestudante = True\n\nprint(type(idade))  # int\nnumero_str = "10"\nnumero_int = int(numero_str)  # 10</pre>`,
+                test: [
+                    { q: "Qual tipo de dado é atribuído à variável 'x' na expressão `x = 5.5`?", opts: ["int", "float", "str", "bool"], a: 1 },
+                    { q: "Qual função converte a string '10' em um número inteiro?", opts: ["number('10')", "int('10')", "integer('10')", "toInt('10')"], a: 1 },
+                    { q: "Qual dos nomes de variáveis abaixo é **INVÁLIDO** em Python?", opts: ["minha_var", "2nome", "_valor", "nomeFinal"], a: 1 },
+                    { q: "Qual o resultado de `type(False)`?", opts: ["<class 'int'>", "<class 'str'>", "<class 'bool'>", "<class 'float'>"], a: 2 },
+                    { q: "Qual o tipo de dado que armazena sequências de caracteres?", opts: ["list", "float", "str", "dict"], a: 2 },
+                    { q: "Qual função é usada para verificar o tipo de uma variável?", opts: ["typeof()", "typecheck()", "datatype()", "type()"], a: 3 },
+                    { q: "Na atribuição `saldo = 100`, qual é o tipo de dado de `saldo`?", opts: ["float", "str", "bool", "int"], a: 3 },
+                    { q: "O que a instrução `float(5)` retorna?", opts: ["5", "5.0", "Error", "'5'"], a: 1 },
+                    { q: "Qual palavra-chave é um valor booleano em Python?", opts: ["TRUE", "None", "False", "int"], a: 2 },
+                    { q: "Qual tipo de dado é *imutável* entre as opções a seguir?", opts: ["Listas", "Dicionários", "Sets", "Strings"], a: 3 }
+                ]
+            },
+            "0-2": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li><strong>Aritméticos:</strong> +, -, *, /, //, %, **</li><li><strong>Comparação:</strong> ==, !=, >, <, >=, <=</li><li><strong>Lógicos:</strong> and, or, not</li><li><strong>Atribuição:</strong> =, +=, -=, *=, /=</li></ul><h3>💻 Exemplos:</h3><pre>10 // 3    # 3 (divisão inteira)\n10 % 3     # 1 (resto)\n2 ** 3     # 8 (potência)\n5 > 3 and 2 < 4  # True\nx = 10\nx += 5     # x agora é 15</pre>`,
+                test: [
+                    { q: "Qual é o resultado da operação `10 // 3`?", opts: ["3.33", "3", "4", "1"], a: 1 },
+                    { q: "Qual operador é usado para retornar o resto da divisão (módulo)?", opts: ["/", "//", "%", "**"], a: 2 },
+                    { q: "Qual o resultado da expressão lógica `True and False`?", opts: ["True", "False", "None", "Error"], a: 1 },
+                    { q: "Qual o resultado de `5 ** 2`?", opts: ["7", "25", "10", "3"], a: 1 },
+                    { q: "Se `x = 5`, qual o valor de `x` após a operação `x *= 3`?", opts: ["5", "8", "15", "2"], a: 2 },
+                    { q: "Qual operador verifica se dois valores são *diferentes*?", opts: ["==", "=", "!=", "<>"], a: 2 },
+                    { q: "Qual é a principal diferença entre `/` e `//`?", opts: ["Um é para soma e outro para subtração", "Divisão por zero", "Divisão flutuante vs. divisão inteira", "Divisão por números pares"], a: 2 },
+                    { q: "Qual operador inverte o valor booleano de uma expressão?", opts: ["or", "and", "not", "is"], a: 2 },
+                    { q: "Qual a precedência correta de operadores (alta para baixa, simplificada)?", opts: ["+, -, *, **", "**, *, +, -", "*, +, **, -", "+, **, -, *"], a: 1 },
+                    { q: "O que a expressão `7 > 7 or 7 == 7` retorna?", opts: ["False", "True", "Error", "None"], a: 1 }
+                ]
+            },
+            "0-3": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li>Concatenação: "Olá" + " " + "Mundo"</li><li>Repetição: "Ha" * 3 → "HaHaHa"</li><li>F-strings: f"Nome: {nome}"</li><li>Métodos: .upper(), .lower(), .strip(), .replace()</li><li>Fatiamento: texto[0:5], texto[::-1]</li></ul><h3>💻 Exemplos:</h3><pre>nome = "python"\nprint(nome.upper())  # PYTHON\nprint(nome.capitalize())  # Python\n\nidade = 25\nmsg = f"Tenho {idade} anos"\n\ntexto = "  espaços  "\nprint(texto.strip())  # "espaços"</pre>`,
+                test: [
+                    { q: "Qual o resultado da expressão `'Py' * 3`?", opts: ["PyPyPy", "Py3", "Error", "9"], a: 0 },
+                    { q: "Qual das sintaxes abaixo representa uma f-string corretamente?", opts: ["'Olá' + nome", "f'Olá {nome}'", "'Olá %s' % nome", "Todas"], a: 1 },
+                    { q: "O método `'python'.upper()` retorna qual valor?", opts: ["python", "PYTHON", "Python", "Error"], a: 1 },
+                    { q: "Qual método remove espaços em branco no início e fim de uma string?", opts: [".remove()", ".clean()", ".strip()", ".trim()"], a: 2 },
+                    { q: "Se `texto = 'banana'`, qual o resultado de `texto[1:4]`?", opts: ["ban", "ana", "nan", "bana"], a: 2 },
+                    { q: "Qual método é usado para substituir uma substring por outra?", opts: [".replace()", ".sub()", ".swap()", ".change()"], a: 0 },
+                    { q: "Qual o resultado de `'Hello World'.lower()`?", opts: ["Hello World", "HELLO WORLD", "hello world", "Error"], a: 2 },
+                    { q: "O que o fatiamento `[::-1]` faz em uma string?", opts: ["Pega o primeiro elemento", "Inverte a string", "Copia a string", "Retorna um erro"], a: 1 },
+                    { q: "Qual é a maneira mais moderna e recomendada para formatar strings?", opts: ["Operador %", "Método .format()", "F-strings", "Concatenação com +"], a: 2 },
+                    { q: "Se `s = 'abc'`, qual o resultado de `len(s)`?", opts: ["0", "1", "3", "Error"], a: 2 }
+                ]
+            },
+            "0-4": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li><strong>if:</strong> executa se True</li><li><strong>elif:</strong> testa outra condição</li><li><strong>else:</strong> executa se todas forem False</li><li>Indentação obrigatória (4 espaços)</li><li>Operador ternário: x if cond else y</li></ul><h3>💻 Exemplo:</h3><pre>idade = 18\n\nif idade < 13:\n    print("Criança")\nelif idade < 18:\n    print("Adolescente")\nelse:\n    print("Adulto")\n\n# Ternário\nstatus = "maior" if idade >= 18 else "menor"</pre>`,
+                test: [
+                    { q: "Em um bloco `if/elif/else`, se todas as condições forem `False`, qual bloco é executado?", opts: ["Erro", "Executa if", "Executa else", "Nada"], a: 2 },
+                    { q: "Qual a indentação recomendada (e obrigatória) para blocos de código em Python?", opts: ["2 espaços", "4 espaços", "8 espaços", "Tab"], a: 1 },
+                    { q: "O que a palavra-chave `elif` significa?", opts: ["end if", "else if", "elif function", "else"], a: 1 },
+                    { q: "O que acontece se você não usar a indentação correta em um bloco `if`?", opts: ["Gera um `TypeError`", "O código roda, mas com warnings", "Gera um `IndentationError`", "É ignorado"], a: 2 },
+                    { q: "Qual a sintaxe correta para o operador ternário (atribuição condicional)?", opts: ["(x if cond else y)", "x = cond ? y : z", "x if cond else y", "if cond then x else y"], a: 2 },
+                    { q: "Qual o resultado de `status = 'OK' if 10 > 5 else 'FAIL'`?", opts: ["'OK'", "'FAIL'", "True", "Error"], a: 0 },
+                    { q: "Se `x = 0`, qual bloco será executado neste código: `if x > 0: print('A') elif x == 0: print('B') else: print('C')`?", opts: ["if", "elif", "else", "Nenhum"], a: 1 },
+                    { q: "Em condicionais, qual tipo de dado o Python espera após o `if`?", opts: ["String", "Inteiro", "Booleano", "Lista"], a: 2 },
+                    { q: "Qual operador de comparação verifica 'maior ou igual a'?", opts: ["=>", ">=", "=<", "=="], a: 1 },
+                    { q: "É possível ter um bloco `if` sem um `else`?", opts: ["Não, é obrigatório", "Sim, o `else` é opcional", "Apenas se for dentro de uma função", "Apenas se for um loop"], a: 1 }
+                ]
+            },
+            "0-5": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li><strong>for:</strong> itera sobre sequências</li><li><strong>while:</strong> executa enquanto True</li><li><strong>range(start, stop, step):</strong> gera números</li><li><strong>break:</strong> sai do loop</li><li><strong>continue:</strong> pula para próxima iteração</li></ul><h3>💻 Exemplos:</h3><pre>for i in range(5):\n    print(i)  # 0,1,2,3,4\n\ncontador = 0\nwhile contador < 3:\n    print(contador)\n    contador += 1\n\nfor n in [1,2,3,4,5]:\n    if n == 3:\n        break  # Para no 3</pre>`,
+                test: [
+                    { q: "Quantas iterações o loop `for i in range(3)` irá executar?", opts: ["2", "3", "4", "Infinitas"], a: 1 },
+                    { q: "Qual palavra-chave é usada para sair imediatamente de um loop?", opts: ["Pausa", "Pula iteração", "break", "Reinicia"], a: 2 },
+                    { q: "O que a instrução `range(1, 6, 2)` gera?", opts: ["1, 2, 3, 4, 5", "1, 3, 5", "2, 4, 6", "1, 2, 3"], a: 1 },
+                    { q: "Qual palavra-chave é usada para pular a iteração atual e ir para a próxima do loop?", opts: ["break", "pass", "continue", "skip"], a: 2 },
+                    { q: "O loop `while` é executado até que sua condição seja...", opts: ["Inicializada", "Falsa", "Verdadeira", "Quebrada pelo `break`"], a: 1 },
+                    { q: "Qual o último número exibido por `for i in range(1, 5): print(i)`?", opts: ["1", "5", "4", "0"], a: 2 },
+                    { q: "Qual a sintaxe correta para iterar sobre os elementos de uma lista chamada `cores`?", opts: ["for i in cores:", "loop cores:", "while cores:", "for in cores:"], a: 0 },
+                    { q: "Se a condição do `while` for sempre `True`, o que o loop causará (sem `break`)?", opts: ["Erro de compilação", "Loop finito", "Loop infinito", "Pausa automática"], a: 2 },
+                    { q: "O que a instrução `range(5)` retorna?", opts: ["Uma lista de 5 números", "Um gerador de 0 a 4", "O número 5", "Uma tupla"], a: 1 },
+                    { q: "No código `for x in [1, 2]: print(x * 2)`, qual é o output?", opts: ["1, 2", "2, 4", "4, 2", "Error"], a: 1 }
+                ]
+            },
+            "0-6": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li>Criar: numeros = [1, 2, 3]</li><li>Acessar: lista[0], lista[-1]</li><li>Adicionar: .append(), .insert(), .extend()</li><li>Remover: .remove(), .pop(), del</li><li>Outros: .sort(), .reverse(), len()</li><li>Fatiamento: lista[1:3]</li></ul><h3>💻 Exemplos:</h3><pre>frutas = ["maçã", "banana"]\nfrutas.append("laranja")\nfrutas.insert(0, "uva")\nfrutas.remove("banana")\n\nprint(len(frutas))  # quantidade\nprint(frutas[-1])  # último</pre>`,
+                test: [
+                    { q: "Qual índice retorna o **último** elemento de uma lista em Python?", opts: ["lista[0]", "lista[-1]", "lista[last]", "lista.last()"], a: 1 },
+                    { q: "Qual método é usado para adicionar um item **ao final** de uma lista?", opts: [".add()", ".append()", ".insert()", ".push()"], a: 1 },
+                    { q: "Qual o resultado de `len([1, 2, 3, 4])`?", opts: ["3", "4", "5", "Error"], a: 1 },
+                    { q: "Se `lista = [10, 20, 30]`, qual o resultado de `lista[0] = 5`?", opts: ["Error", "A lista vira [10, 5, 30]", "A lista vira [5, 20, 30]", "Nada muda"], a: 2 },
+                    { q: "Qual método remove um elemento pelo seu valor (e não pelo índice)?", opts: [".pop()", "del", ".remove()", ".delete()"], a: 2 },
+                    { q: "O que o fatiamento `lista[1:3]` faz?", opts: ["Pega o 1º elemento", "Pega os elementos do índice 1 ao 2", "Pega os elementos do índice 1 ao 3", "Pega todos os elementos"], a: 1 },
+                    { q: "Qual a diferença entre `.append()` e `.extend()`?", opts: ["`append` adiciona vários, `extend` adiciona um", "Não há diferença", "`append` adiciona um elemento, `extend` une listas", "Ambos unem listas"], a: 2 },
+                    { q: "Qual o resultado de `[1] * 3`?", opts: ["[1, 1, 1]", "[3]", "[1, 3]", "Error"], a: 0 },
+                    { q: "Qual método reverte a ordem dos elementos na lista?", opts: [".sort()", ".reverse()", ".revert()", ".order()"], a: 1 },
+                    { q: "O que o comando `del lista[1]` faz?", opts: ["Remove o valor '1'", "Remove o elemento no índice 1", "Apaga a lista inteira", "Retorna o elemento"], a: 1 }
+                ]
+            },
+            "0-7": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li><strong>Tuplas:</strong> imutáveis, usa ()</li><li>Não podem ser modificadas</li><li><strong>Sets:</strong> sem duplicatas, usa {}</li><li>Operações: união, interseção</li><li>Sets não têm ordem</li></ul><h3>💻 Exemplos:</h3><pre># Tupla\ncoords = (10, 20, 30)\nx, y, z = coords\n\n# Set\nnums = {1, 2, 3, 3, 2}\nprint(nums)  # {1,2,3}\n\nset1 = {1, 2, 3}\nset2 = {3, 4, 5}\nprint(set1 & set2)  # {3}</pre>`,
+                test: [
+                    { q: "Qual é a principal característica das tuplas?", opts: ["Mutáveis", "Imutáveis", "Desordenadas", "Só podem armazenar números"], a: 1 },
+                    { q: "Qual o resultado de `set({1, 2, 2, 3})`?", opts: ["Error", "{1, 2, 2, 3}", "{1, 2, 3}", "{2, 2}"], a: 2 },
+                    { q: "Qual símbolo é usado para definir um set (conjunto)?", opts: ["[]", "()", "{}", "<>"], a: 2 },
+                    { q: "Qual operador é usado para a operação de intersecção entre dois sets?", opts: ["|", "&", "+", "-"], a: 1 },
+                    { q: "Tuplas são definidas com quais símbolos?", opts: ["[]", "{}", "()", "//"], a: 2 },
+                    { q: "O que acontece se você tentar modificar um elemento de uma tupla?", opts: ["A tupla é copiada", "Gera um `TypeError`", "O valor é atualizado", "A tupla vira uma lista"], a: 1 },
+                    { q: "Qual das estruturas a seguir *não* aceita elementos duplicados?", opts: ["Lista", "Tupla", "Set", "Dicionário"], a: 2 },
+                    { q: "O que significa a descompactação (unpacking) de tupla, como em `x, y = (10, 20)`?", opts: ["Gera um erro", "Cria uma nova tupla", "Atribui valores a múltiplas variáveis em uma linha", "Converte a tupla para lista"], a: 2 },
+                    { q: "Qual método adiciona um elemento a um set?", opts: [".append()", ".insert()", ".add()", ".extend()"], a: 2 },
+                    { q: "Qual a diferença primária entre um Set e uma Lista?", opts: ["Set armazena apenas strings", "Lista é imutável e Set é mutável", "Lista é ordenada e aceita duplicatas; Set é desordenado e único", "São idênticos"], a: 2 }
+                ]
+            },
+            "0-8": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li>Estrutura chave-valor</li><li>Criar: pessoa = {} ou dict()</li><li>Acessar: pessoa["nome"] ou .get("nome")</li><li>Adicionar: pessoa["cidade"] = "SP"</li><li>Remover: del pessoa["idade"]</li><li>Métodos: .keys(), .values(), .items()</li></ul><h3>💻 Exemplos:</h3><pre>aluno = {\n    "nome": "Maria",\n    "idade": 20,\n    "curso": "Python"\n}\n\nprint(aluno["nome"])\naluno["nota"] = 9.5\ndel aluno["idade"]\n\nfor k, v in aluno.items():\n    print(f"{k}: {v}")</pre>`,
+                test: [
+                    { q: "Qual método permite acessar um valor no dicionário de forma segura (sem gerar erro se a chave não existir)?", opts: ["dict[k]", "dict.get(k)", "dict(k)", "dict->k"], a: 1 },
+                    { q: "O método `.keys()` de um dicionário retorna:", opts: ["Valores", "Chaves", "Ambos", "Nada"], a: 1 },
+                    { q: "Qual a maneira correta de verificar se a chave 'nome' existe no dicionário `dicionario`?", opts: ["'nome' in dicionario", "dicionario.has('nome')", "dicionario['nome']", "dicionario.exists('nome')"], a: 0 },
+                    { q: "Qual o resultado de `d = {'a': 1}; d['b'] = 2; print(d)`?", opts: ["{'a': 1, 'b': 2}", "{'a': 1}", "Error", "{'b': 2}"], a: 0 },
+                    { q: "Qual instrução remove o par chave-valor 'idade' do dicionário `pessoa`?", opts: ["pessoa.pop('idade')", "pessoa.remove('idade')", "del pessoa['idade']", "Todas as anteriores"], a: 2 },
+                    { q: "Qual método retorna pares chave-valor para iteração?", opts: [".keys()", ".values()", ".items()", ".get_pairs()"], a: 2 },
+                    { q: "Se você tentar acessar uma chave que não existe com `d['chave_inexistente']`, qual erro é gerado?", opts: ["AttributeError", "TypeError", "ValueError", "KeyError"], a: 3 },
+                    { q: "Dicionários são indexados por:", opts: ["Números inteiros (índices)", "Ordem de inserção", "Chaves (imutáveis)", "Strings"], a: 2 },
+                    { q: "Qual tipo de dado é usado como chave em um dicionário?", opts: ["Listas", "Dicionários", "Sets", "Tuplas"], a: 3 },
+                    { q: "O que a instrução `dicionario.clear()` faz?", opts: ["Remove um item", "Copia o dicionário", "Apaga todas as chaves e valores", "Reseta o dicionário"], a: 2 }
+                ]
+            },
+            "0-9": {
+                learn: `<h3>📚 O que aprender:</h3><ul><li>Definir com <strong>def</strong></li><li>Parâmetros e argumentos</li><li><strong>return:</strong> retorna valor</li><li>Funções sem return retornam None</li><li>Escopo de variáveis</li><li>Argumentos padrão</li></ul><h3>💻 Exemplos:</h3><pre>def somar(a, b):\n    return a + b\n\nresultado = somar(5, 3)  # 8\n\ndef saudar(nome="Visitante"):\n    print(f"Olá, {nome}!")\n\nsaudar()  # Olá, Visitante!\nsaudar("Ana")  # Olá, Ana!</pre>`,
+                test: [
+                    { q: "Qual palavra-chave é usada para definir uma função em Python?", opts: ["function", "def", "func", "define"], a: 1 },
+                    { q: "O que uma função retorna por padrão se não houver a palavra-chave `return`?", opts: ["0", "False", "None", "Error"], a: 2 },
+                    { q: "Qual o nome dado aos valores passados para uma função quando ela é chamada?", opts: ["Parâmetros", "Variáveis", "Argumentos", "Retornos"], a: 2 },
+                    { q: "Argumentos padrão (default) permitem que você...", opts: ["Chame a função sem passar um valor para aquele parâmetro", "Tenha múltiplos valores de retorno", "Force o usuário a passar um valor", "Crie uma função recursiva"], a: 0 },
+                    { q: "Qual a sintaxe correta para definir um argumento padrão?", opts: ["def f(a, b = 1):", "def f(a: 1, b):", "def f(a) = 1:", "def f(a, default b = 1):"], a: 0 },
+                    { q: "Variáveis definidas dentro de uma função têm escopo...", opts: ["Global", "De Classe", "Local", "De Módulo"], a: 2 },
+                    { q: "O que a instrução `return 5 * 2` faz?", opts: ["Exibe 10 no console", "Termina a função e retorna 10", "Salva 10 em uma variável global", "Gera um erro"], a: 1 },
+                    { q: "Funções que não retornam explicitamente um valor são frequentemente chamadas de...", opts: ["Procedimentos", "Métodos", "Classes", "Decoradores"], a: 0 },
+                    { q: "Qual a ordem correta na definição de parâmetros?", opts: ["Argumentos padrão, *args, **kwargs", "Argumentos posicionais, *args, **kwargs", "*args, **kwargs, Argumentos padrão", "**kwargs, *args, Argumentos posicionais"], a: 1 },
+                    { q: "Qual o resultado de `f(2)` se `def f(x, y=3): return x * y`?", opts: ["5", "6", "Error", "23"], a: 1 }
+                ]
+            },
+            // ######################################################################
+            // NÍVEL 1: INTERMEDIÁRIO (10 QUESTÕES CADA)
+            // ######################################################################
+            "1-0": {
+                learn: `<h3>📚 Funções Avançadas:</h3><ul><li><strong>*args:</strong> Recebe argumentos posicionais como tupla.</li><li><strong>**kwargs:</strong> Recebe argumentos nomeados como dicionário.</li><li><strong>Decorators:</strong> Funções que envolvem outras funções para estender seu comportamento.</li></ul><h3>💻 Exemplo:</h3><pre>def log_decorator(func):\n    def wrapper(*args, **kwargs):\n        print(f"Chamando {func.__name__}")\n        return func(*args, **kwargs)\n    return wrapper\n\n@log_decorator\ndef somar(a, b):\n    return a + b</pre>`,
+                test: [
+                    { q: "Qual a sintaxe para aceitar um número variável de argumentos posicionais (não nomeados)?", opts: ["*args", "**kwargs", "args", "&args"], a: 0 },
+                    { q: "Decorators são usados principalmente para...", opts: ["Definir classes", "Envolver funções para modificar seu comportamento", "Criar variáveis globais", "Gerar módulos"], a: 1 },
+                    { q: "A variável `**kwargs` armazena argumentos como qual tipo de dado?", opts: ["Lista", "Tupla", "Dicionário", "Set"], a: 2 },
+                    { q: "O que a sintaxe `@log_decorator` faz?", opts: ["Chama a função `log_decorator`", "Define uma função assíncrona", "Aplica o decorator à função seguinte", "Importa o decorator de outro módulo"], a: 2 },
+                    { q: "Qual o resultado de `f(1, 2, 3)` se `def f(*args): return args[0] + args[2]`?", opts: ["3", "4", "5", "Error"], a: 1 },
+                    { q: "Qual o resultado de `g(nome='Alice', idade=30)` se `def g(**kwargs): return kwargs['idade']`?", opts: ["'Alice'", "30", "Error", "None"], a: 1 },
+                    { q: "Qual é o principal benefício de usar decorators?", opts: ["Otimização de memória", "Aumento de velocidade do loop", "Reutilização de código de forma limpa", "Implementação de herança"], a: 2 },
+                    { q: "Dentro de um decorator, qual a função do `wrapper`?", opts: ["Define a função decorada", "Executa a lógica antes e depois da função original", "É o nome da função original", "Lida com exceções"], a: 1 },
+                    { q: "Qual argumento permite passar valores nomeados de forma dinâmica para uma função?", opts: ["*args", "kwargs", "**kwargs", "args"], a: 2 },
+                    { q: "Qual função em Python permite encadear a aplicação de um decorator?", opts: ["`super()`", "`yield`", "`@` (símbolo)", "`import`"], a: 2 }
+                ]
+            },
+            "1-1": {
+                learn: `<h3>📚 Comprehensions:</h3><ul><li>Forma concisa de criar estruturas de dados (listas, dicionários, sets).</li><li>Melhora a legibilidade e desempenho.</li><li><strong>Estrutura:</strong> <code>[expressão for item in iterável if condição]</code></li></ul><h3>💻 Exemplo:</h3><pre>numeros = [1, 2, 3, 4, 5]\n\n# List Comprehension\npare = [x ** 2 for x in numeros if x % 2 == 0] # [4, 16]\n\n# Dictionary Comprehension\nquadrados = {x: x * x for x in range(3)} # {0: 0, 1: 1, 2: 4}</pre>`,
+                test: [
+                    { q: "Qual o resultado da list comprehension `[x*2 for x in range(3)]`?", opts: ["[0, 2, 4]", "[0, 1, 2]", "[1, 2, 4]", "Error"], a: 0 },
+                    { q: "A principal vantagem das comprehensions é...", opts: ["Melhorar a depuração", "Melhorar desempenho e legibilidade", "Apenas melhorar o desempenho", "Evitar o uso de loops"], a: 1 },
+                    { q: "Qual tipo de comprehension usa chaves `{}` para definir pares chave:valor?", opts: ["List", "Set", "Tuple", "Dictionary"], a: 3 },
+                    { q: "Qual dos seguintes é um Generator Expression, e não uma List/Dict/Set Comprehension?", opts: ["[]", "{}", "()", "<>"], a: 2 },
+                    { q: "Qual o resultado de `{x for x in [1, 1, 2, 3]}`?", opts: ["{1, 1, 2, 3}", "[1, 2, 3]", "{1, 2, 3}", "Error"], a: 2 },
+                    { q: "O que a cláusula `if` faz em uma comprehension?", opts: ["Muda a ordem dos elementos", "Executa a expressão condicionalmente", "Filtra os elementos", "Retorna a condição booleana"], a: 2 },
+                    { q: "Na list comprehension `[x for x in lista if x > 5]`, o que `x` representa?", opts: ["O índice do elemento", "A condição", "O elemento atual da lista", "O tamanho da lista"], a: 2 },
+                    { q: "Qual o resultado de `{k: v for k, v in [('a', 1), ('b', 2)]}`?", opts: ["('a', 1), ('b', 2)", "{'a': 1, 'b': 2}", "[('a', 1), ('b', 2)]", "Error"], a: 1 },
+                    { q: "Comprehensions são uma forma de programação...", opts: ["Imperativa", "Procedural", "Orientada a Objetos", "Funcional"], a: 3 },
+                    { q: "Para obter uma lista de strings em maiúsculas de `['a', 'b', 'c']`, qual é a compreensão correta?", opts: ["[`x`.upper() for x in lista]", "[for x in lista: x.upper()]", "{x.upper() for x in lista}", "list(x.upper() for x in lista)"], a: 0 }
+                ]
+            },
+            "1-2": {
+                learn: `<h3>📚 Módulos:</h3><ul><li>Arquivos <code>.py</code> que contêm funções, classes e variáveis.</li><li>Usa-se <strong>import</strong> para acessar o conteúdo de outros módulos.</li><li>Ajuda a organizar o código.</li></ul><h3>💻 Exemplo:</h3><pre># math_ops.py\ndef add(a, b): return a + b\n\n# main.py\nimport math_ops\nprint(math_ops.add(10, 5))\n\n# Ou\nfrom math_ops import add\nprint(add(10, 5))</pre>`,
+                test: [
+                    { q: "Qual palavra-chave é usada para incluir um módulo no script atual?", opts: ["include", "module", "import", "get"], a: 2 },
+                    { q: "Um módulo Python é tipicamente um arquivo com qual extensão?", opts: [".txt", ".mod", ".py", ".bin"], a: 2 },
+                    { q: "Como importar apenas uma função 'x' de um módulo 'y'?", opts: ["import y.x", "get x from y", "from y import x", "y import x"], a: 2 },
+                    { q: "Qual o significado de `import modulo as m`?", opts: ["Renomear a função principal do módulo", "Importar apenas a função m", "Dar um alias (apelido) 'm' ao módulo", "Importar o módulo em background"], a: 2 },
+                    { q: "O que é um 'pacote' (package) em Python?", opts: ["Um único arquivo .py", "Uma coleção de módulos em um diretório com um arquivo `__init__.py`", "Uma biblioteca instalada com pip", "Uma variável global"], a: 1 },
+                    { q: "Qual o resultado de tentar chamar uma função importada usando `import modulo` com `funcao()`?", opts: ["Funciona normalmente", "Gera um `SyntaxError`", "Gera um `NameError`", "Deve ser chamado como `modulo.funcao()`"], a: 3 },
+                    { q: "Qual arquivo é necessário em um diretório para que ele seja tratado como um pacote em Python 2 (e ainda por convenção em Python 3)?", opts: ["main.py", "module.txt", "__init__.py", "package.json"], a: 2 },
+                    { q: "Qual biblioteca Python é carregada por padrão (built-in) sem precisar de `pip install`?", opts: ["requests", "numpy", "os", "pandas"], a: 2 },
+                    { q: "Para que serve a função `dir(modulo)`?", opts: ["Excluir o módulo", "Exibir os atributos e funções disponíveis no módulo", "Recarregar o módulo", "Instalar o módulo"], a: 1 },
+                    { q: "Se você importa um módulo e depois o altera no sistema de arquivos, como você o recarrega no script sem reiniciar o interpretador?", opts: ["import modulo again", "reload(modulo) (do módulo importlib)", "reinstall modulo", "update modulo"], a: 1 }
+                ]
+            },
+            "1-3": {
+                learn: `<h3>📚 Exceções:</h3><ul><li>Tratamento de erros em tempo de execução.</li><li><strong>try:</strong> Bloco de código a ser testado.</li><li><strong>except:</strong> Bloco executado se ocorrer uma exceção.</li><li><strong>finally:</strong> Bloco sempre executado.</li></ul><h3>💻 Exemplo:</h3><pre>try:\n    resultado = 10 / 0\nexcept ZeroDivisionError:\n    print("Erro: Divisão por zero!")\nexcept Exception as e:\n    print(f"Outro erro: {e}")\nfinally:\n    print("Operação concluída.")</pre>`,
+                test: [
+                    { q: "Qual bloco de código é **sempre** executado, independente de ter ocorrido uma exceção ou não?", opts: ["try", "except", "else", "finally"], a: 3 },
+                    { q: "O que acontece se um erro **ocorre** no bloco `try` e há um bloco `except` que o captura?", opts: ["O programa para", "Executa o `except` e depois continua a execução normal", "Executa o `finally` e depois para", "O código dentro do `except` é ignorado"], a: 1 },
+                    { q: "Qual exceção é gerada ao tentar dividir um número por zero?", opts: ["IndexError", "TypeError", "ZeroDivisionError", "MathError"], a: 2 },
+                    { q: "Qual palavra-chave é usada para gerar uma exceção manualmente?", opts: ["generate", "raise", "except", "error"], a: 1 },
+                    { q: "Qual bloco permite que você execute código somente se o bloco `try` for executado **sem** erros?", opts: ["finally", "except", "else", "continue"], a: 2 },
+                    { q: "O que significa a sintaxe `except Exception as e:`?", opts: ["Cria uma nova exceção", "Ignora todos os erros", "Captura qualquer exceção e a armazena na variável 'e'", "Apenas captura erros de divisão"], a: 2 },
+                    { q: "Qual exceção ocorre ao tentar acessar um índice que está fora do limite de uma lista?", opts: ["KeyError", "IndexError", "ValueError", "TypeError"], a: 1 },
+                    { q: "O que acontece se uma exceção ocorre no bloco `except`?", opts: ["A exceção é ignorada", "O programa para, pois não há tratamento para o erro dentro do `except`", "O `finally` é executado", "O bloco `try` é reiniciado"], a: 1 },
+                    { q: "Qual a função do módulo `traceback`?", opts: ["Lidar com a divisão por zero", "Gerar erros personalizados", "Extrair e formatar informações detalhadas sobre a exceção", "Definir um novo bloco `try`"], a: 2 },
+                    { q: "Qual erro é gerado ao tentar converter uma string não numérica para inteiro, ex: `int('abc')`?", opts: ["NameError", "TypeError", "ValueError", "AttributeError"], a: 2 }
+                ]
+            },
+            "1-4": {
+                learn: `<h3>📚 Arquivos:</h3><ul><li>Abrir: <code>open('file.txt', mode)</code></li><li>Modos: 'r' (leitura), 'w' (escrita - sobrescreve), 'a' (anexar)</li><li>Sempre fechar o arquivo: <code>file.close()</code> ou usar <strong>Context Managers</strong> (nível 2).</li></ul><h3>💻 Exemplo:</h3><pre># Escrita\nf = open('output.txt', 'w')\nf.write('Dados salvos\\n')\nf.close()\n\n# Leitura\nf = open('output.txt', 'r')\nconteudo = f.read()\nprint(conteudo)\nf.close()</pre>`,
+                test: [
+                    { q: "Qual modo de arquivo **sobrescreve** o conteúdo de um arquivo existente?", opts: ["r", "a", "w", "r+"], a: 2 },
+                    { q: "Qual método da função de arquivo lê todo o conteúdo de uma vez?", opts: [".line()", ".readlines()", ".get_content()", ".read()"], a: 3 },
+                    { q: "É uma boa prática **sempre**...?", opts: ["Usar o modo 'w'", "Fechar o arquivo (`file.close()`)", "Ler o arquivo com `readlines()`", "Abrir no modo 'r'"], a: 1 },
+                    { q: "Qual o modo de arquivo usado para **anexar** (adicionar ao final) dados sem apagar o existente?", opts: ["r", "a", "w", "x"], a: 1 },
+                    { q: "Qual método lê o arquivo linha por linha em um loop?", opts: [".read()", "for line in file:", ".read_lines()", ".get_lines()"], a: 1 },
+                    { q: "O que o método `file.writelines(lista)` faz?", opts: ["Escreve uma única linha", "Escreve o conteúdo de uma lista (sem adicionar quebras de linha)", "Lê múltiplas linhas", "Abre um novo arquivo"], a: 1 },
+                    { q: "Se você abrir um arquivo com o modo 'r' e tentar usar `file.write()`, o que acontece?", opts: ["Ele escreve no arquivo", "Ele pergunta se você quer mudar o modo", "Gera um `IOError` ou `UnsupportedOperation`", "Abre um novo arquivo"], a: 2 },
+                    { q: "Qual método move o 'cursor' de leitura/escrita para uma posição específica no arquivo?", opts: [".move()", ".position()", ".seek()", ".skip()"], a: 2 },
+                    { q: "O que acontece se você não fechar um arquivo após a escrita?", opts: ["Os dados podem não ser salvos (buffer)", "O programa para", "Gera um `SyntaxError`", "Abre um novo arquivo automaticamente"], a: 0 },
+                    { q: "Qual modo é usado para ler e escrever, sobrescrevendo se o arquivo existir?", opts: ["a+", "r+", "w+", "x"], a: 2 }
+                ]
+            },
+            "1-5": {
+                learn: `<h3>📚 Classes (POO Básica):</h3><ul><li><strong>Classes:</strong> Modelos para criar objetos.</li><li><strong>Objetos:</strong> Instâncias de classes.</li><li><strong>__init__:</strong> Construtor.</li><li><strong>self:</strong> Referência ao objeto atual.</li></ul><h3>💻 Exemplo:</h3><pre>class Carro:\n    def __init__(self, cor, marca):\n        self.cor = cor\n        self.marca = marca\n\n    def buzinar(self):\n        return "Biiib!"\n\nmeu_carro = Carro("vermelho", "Ford")\nprint(meu_carro.cor) # vermelho\nprint(meu_carro.buzinar())</pre>`,
+                test: [
+                    { q: "Qual método é o construtor de uma classe Python?", opts: ["_start_", "new", "__init__", "create"], a: 2 },
+                    { q: "O primeiro parâmetro `self` em um método se refere a:", opts: ["A classe em si", "O módulo", "A instância do objeto", "Uma variável global"], a: 2 },
+                    { q: "POO significa:", opts: ["Programa Orientado a Objeto", "Processamento de Objetos Ordenados", "Programação Orientada a Objetos", "Python de Objetos Ocultos"], a: 2 },
+                    { q: "O que é um 'Objeto' em Programação Orientada a Objetos?", opts: ["Um tipo de função", "Um sinônimo de classe", "Uma instância de uma classe", "Um arquivo .py"], a: 2 },
+                    { q: "Atributos definidos fora de qualquer método, mas dentro da classe, são chamados de:", opts: ["Atributos de instância", "Atributos de classe", "Variáveis locais", "Propriedades"], a: 1 },
+                    { q: "Qual o resultado de `p.idade` se `class Pessoa: idade = 20` e `p = Pessoa()`?", opts: ["20", "Error", "None", "Pessoa"], a: 0 },
+                    { q: "Métodos de instância devem sempre receber qual parâmetro obrigatório?", opts: ["`cls`", "`instance`", "`self`", "`args`"], a: 2 },
+                    { q: "Para criar um objeto (instanciar uma classe `Carro`), qual a sintaxe correta?", opts: ["Carro.new()", "Carro()", "new Carro()", "create Carro()"], a: 1 },
+                    { q: "Qual dos pilares da POO a criação de classes e objetos representa diretamente?", opts: ["Herança", "Abstração", "Polimorfismo", "Encapsulamento"], a: 1 },
+                    { q: "Um método que não tem acesso a `self` (não precisa da instância) deve usar qual decorador?", opts: ["@classmethod", "@staticmethod", "@property", "@wrapper"], a: 1 }
+                ]
+            },
+            "1-6": {
+                learn: `<h3>📚 Herança:</h3><ul><li>Uma classe <strong>Filha</strong> herda atributos e métodos de uma classe <strong>Pai</strong>.</li><li>Sintaxe: <code>class Filho(Pai):</code></li><li><strong>super():</strong> Usado para chamar métodos da classe pai.</li></ul><h3>💻 Exemplo:</h3><pre>class Animal:\n    def falar(self): return "som"\n\nclass Cachorro(Animal):\n    def falar(self): \n        return "Au Au!"\n\n# Herança Múltipla:\nclass AveVoadora(Ave, Voador): # Herda de duas classes\n    pass</pre>`,
+                test: [
+                    { q: "Qual função é usada para chamar métodos e acessar atributos da classe pai?", opts: ["`super()`", "`parent()`", "`base()`", "`this()`"], a: 0 },
+                    { q: "Herança Múltipla é quando uma classe herda de:", opts: ["Um módulo", "Uma classe", "Duas ou mais classes", "Uma função"], a: 2 },
+                    { q: "Qual a sintaxe correta para herança, onde `B` herda de `A`?", opts: ["class B extends A:", "class B(A):", "class B inherits A:", "class B is A:"], a: 1 },
+                    { q: "Qual a ordem que o Python usa para procurar métodos em herança múltipla?", opts: ["LIFO (Last In, First Out)", "Ordem alfabética", "MRO (Method Resolution Order)", "Ordem de definição do objeto"], a: 2 },
+                    { q: "Se a classe `Filho` herda de `Pai`, `Filho` é uma _____ de `Pai`.", opts: ["Superclasse", "Instância", "Subclasse", "Implementação"], a: 2 },
+                    { q: "Se a classe `A` tem um método `f()` e a classe `B` (que herda de `A`) também implementa `f()`, isso é um exemplo de:", opts: ["Encapsulamento", "Abstração", "Sobrescrita (Overriding)", "Polimorfismo"], a: 2 },
+                    { q: "Qual método da classe pai é frequentemente chamado usando `super()` dentro do construtor da classe filha?", opts: ["Qualquer método", "`__str__`", "`__init__`", "`__del__`"], a: 2 },
+                    { q: "O que o comando `issubclass(Cachorro, Animal)` verifica?", opts: ["Se `Cachorro` é uma instância de `Animal`", "Se `Animal` herda de `Cachorro`", "Se `Cachorro` é uma subclasse de `Animal`", "Se são classes relacionadas"], a: 2 },
+                    { q: "Uma classe sem classe pai definida implicitamente herda de qual classe?", opts: ["Object", "Base", "Class", "None"], a: 0 },
+                    { q: "Qual o principal benefício da Herança?", opts: ["Melhorar o desempenho", "Evitar a repetição de código (reutilização)", "Aumentar a segurança", "Redefinir o construtor"], a: 1 }
+                ]
+            },
+            "1-7": {
+                learn: `<h3>📚 Encapsulamento:</h3><ul><li>Mecanismo de restringir acesso direto a atributos/métodos.</li><li><strong>Convenção (Protected):</strong> <code>_nome</code> (acessível, mas aviso)</li><li><strong>Convenção (Private/Name Mangling):</strong> <code>__nome</code> (Python muda o nome para dificultar o acesso direto)</li></ul><h3>💻 Exemplo:</h3><pre>class Pessoa:\n    def __init__(self):\n        self._protegido = 10\n        self.__privado = 20 # vira _Pessoa__privado\n\np = Pessoa()\nprint(p._protegido) # Acessível (mas não recomendado)\n# print(p.__privado) # Erro</pre>`,
+                test: [
+                    { q: "Qual prefixo indica um atributo 'protegido' por **convenção** em Python?", opts: ["__", "_", "##", "@"], a: 1 },
+                    { q: "O Encapsulamento é um princípio de POO que ajuda a:", opts: ["Dividir módulos", "Controlar o acesso e proteger a integridade dos dados", "Criar herança", "Definir funções"], a: 1 },
+                    { q: "Em Python, atributos com prefixo `__` passam por um processo chamado:", opts: ["Data Hiding", "Name Mangling", "Private Access", "Aliasing"], a: 1 },
+                    { q: "A convenção de prefixar com `_` em Python é estritamente forçada pelo interpretador?", opts: ["Sim, gera erro de acesso", "Não, é apenas um aviso para o desenvolvedor", "Apenas dentro de métodos", "Apenas no construtor"], a: 1 },
+                    { q: "O que acontece se você tentar acessar diretamente um atributo que foi 'mangled' (ex: `p.__privado`)?", opts: ["Gera um `AttributeError`", "Retorna o valor do atributo", "O atributo é criado", "Acessa o atributo de classe"], a: 0 },
+                    { q: "Qual decorador é frequentemente usado em conjunto com encapsulamento para controlar o acesso de leitura/escrita a atributos?", opts: ["@classmethod", "@property", "@staticmethod", "@wrapper"], a: 1 },
+                    { q: "Em Python, o encapsulamento forte (privacidade real) como em Java/C++ existe?", opts: ["Sim, usando o prefixo `__`", "Não, o acesso ainda é possível (name mangling)", "Apenas para métodos estáticos", "Apenas para classes abstratas"], a: 1 },
+                    { q: "Se um atributo é nomeado `_x` em uma classe, como ele deve ser tratado por desenvolvedores externos?", opts: ["Acessar e modificar livremente", "Considerar como parte da interface pública", "Acessar apenas dentro da classe", "Considerar como 'protected', não acessível diretamente"], a: 3 },
+                    { q: "Qual a função do getter e setter no contexto de encapsulamento?", opts: ["Acessar e modificar atributos privados com regras de validação", "Apenas definir métodos estáticos", "Controlar a herança", "Apenas inicializar atributos"], a: 0 },
+                    { q: "Qual dos pilares da POO é diretamente suportado pelo encapsulamento?", opts: ["Abstração", "Polimorfismo", "Herança", "Interface"], a: 0 }
+                ]
+            },
+            "1-8": {
+                learn: `<h3>📚 Polimorfismo:</h3><ul><li>A capacidade de um objeto ter múltiplas formas ou um método se comportar de maneira diferente em classes diferentes.</li><li><strong>Sobrescrita (Overriding):</strong> Redefinir um método da classe pai na classe filha.</li><li>Python não tem Sobrecarga de Operadores (Operator Overloading) como em outras linguagens, mas permite implementar métodos especiais como __add__.</li></ul><h3>💻 Exemplo:</h3><pre>class Pato:\n    def voar(self): print("Voando como pato")\n\nclass Aviao:\n    def voar(self): print("Voando como avião")\n\nfor objeto in [Pato(), Aviao()]:\n    objeto.voar() # Chamadas diferentes</pre>`,
+                test: [
+                    { q: "O que é **Sobrescrita (Overriding)** de método?", opts: ["Criar um novo método com nome diferente", "Redefinir um método da classe pai na classe filha", "Chamar um método da superclasse", "Usar `super()`"], a: 1 },
+                    { q: "Qual a tradução literal de Polimorfismo?", opts: ["Uma forma", "Muitas formas", "Sem forma", "Forma estática"], a: 1 },
+                    { q: "O Polimorfismo em Python é amplamente alcançado através de qual conceito?", opts: ["Interfaces", "Classes Abstratas", "Duck Typing", "Generics"], a: 2 },
+                    { q: "Qual método especial permite que a função `len()` funcione em diferentes tipos de objetos (listas, strings, etc.)?", opts: ["`__init__`", "`__str__`", "`__len__`", "`__new__`"], a: 2 },
+                    { q: "Em Python, se duas classes não relacionadas têm um método `fazer_barulho()`, e ambas podem ser usadas no mesmo loop, isso demonstra:", opts: ["Herança", "Abstração", "Polimorfismo por Duck Typing", "Encapsulamento"], a: 2 },
+                    { q: "Sobrecarga de função (ter o mesmo nome de função, mas diferentes números de parâmetros) é suportada nativamente em Python?", opts: ["Sim", "Não", "Apenas com decorators", "Apenas em classes"], a: 1 },
+                    { q: "Qual método permite redefinir o operador `+` para somar objetos customizados?", opts: ["`__add__`", "`__sum__`", "`__plus__`", "`__op_add__`"], a: 0 },
+                    { q: "O que é MRO (Method Resolution Order)?", opts: ["O processo de resolver conflitos de nomes em herança simples", "A ordem em que o Python procura por um método em uma hierarquia de classes (especialmente múltipla)", "O processo de definir o construtor", "Uma forma de polimorfismo"], a: 1 },
+                    { q: "O polimorfismo está relacionado à capacidade de um código ser escrito de forma genérica para lidar com diferentes...", opts: ["Métodos", "Classes", "Tipos de objetos", "Módulos"], a: 2 },
+                    { q: "Qual princípio de design se relaciona intimamente com o Polimorfismo, afirmando que objetos devem ser substituíveis por instâncias de seus subtipos?", opts: ["Princípio do Aberto/Fechado", "Princípio de Segregação de Interface", "Princípio da Substituição de Liskov (LSP)", "Princípio da Inversão de Dependência"], a: 2 }
+                ]
+            },
+            "1-9": {
+                learn: `<h3>📚 Iteradores:</h3><ul><li>Objetos que implementam os métodos <strong>__iter__</strong> e <strong>__next__</strong>.</li><li>Permitem percorrer uma coleção de dados (usados pelo <code>for</code> loop).</li><li><strong>Generators (yield):</strong> Funções que criam iteradores de forma eficiente (sob demanda, economizando memória).</li></ul><h3>💻 Exemplo:</h3><pre># Generator\ndef contagem():\n    i = 0\n    while True:\n        yield i\n        i += 1\n\ncontador = contagem()\nprint(next(contador)) # 0\nprint(next(contador)) # 1</pre>`,
+                test: [
+                    { q: "Qual palavra-chave é usada para transformar uma função em um Generator?", opts: ["return", "generate", "yield", "next"], a: 2 },
+                    { q: "Qual é a principal vantagem de usar Generators em vez de retornar uma lista grande?", opts: ["Velocidade da CPU", "Imutabilidade dos dados", "Economia de memória (geração sob demanda)", "Simplificação do código"], a: 2 },
+                    { q: "Um objeto iterável deve implementar qual método especial?", opts: ["`__start__`", "`__len__`", "`__iter__`", "`__loop__`"], a: 2 },
+                    { q: "Qual função embutida é usada para obter o próximo valor de um iterador/generator?", opts: ["`get()`", "`next()`", "`iter()`", "`value()`"], a: 1 },
+                    { q: "O que é levantado (raised) quando um iterador atinge o fim dos seus elementos?", opts: ["StopLoopError", "IndexError", "StopIteration", "ValueError"], a: 2 },
+                    { q: "Qual objeto é retornado por uma Generator Expression (ex: `(x*2 for x in range(3))`)?", opts: ["Lista", "Tupla", "Iterador/Gerador", "Dicionário"], a: 2 },
+                    { q: "Qual método um iterável (como uma lista) implementa para retornar um objeto iterador?", opts: ["`__call__`", "`__next__`", "`__iter__`", "`__new__`"], a: 2 },
+                    { q: "No loop `for item in lista:`, qual função interna é implicitamente chamada primeiro para obter um iterador da lista?", opts: ["`len()`", "`next()`", "`iter()`", "`list()`"], a: 2 },
+                    { q: "Quando a palavra-chave `yield` é usada, o estado da função é...", opts: ["Resetado", "Salvo", "Apagado", "Terminado"], a: 1 },
+                    { q: "Um generator é uma função que retorna:", opts: ["Uma lista completa", "Um valor único", "Um iterador/generator", "Um objeto booleano"], a: 2 }
+                ]
+            },
+            // ######################################################################
+            // NÍVEL 2: AVANÇADO (10 QUESTÕES CADA)
+            // ######################################################################
+            "2-0": {
+                learn: `<h3>📚 Lambda:</h3><ul><li>Funções anônimas (sem nome) pequenas.</li><li>Usada para operações simples.</li><li>Sintaxe: <code>lambda argumentos: expressão</code></li></ul><h3>💻 Exemplo:</h3><pre># Função normal:\ndef dobrar(x): return x * 2\n\n# Lambda equivalente:\ndobrar = lambda x: x * 2\nprint(dobrar(5)) # 10\n\n# Usado em map/filter:\nlista = [1, 2, 3]\nnova_lista = list(map(lambda x: x + 1, lista)) # [2, 3, 4]</pre>`,
+                test: [
+                    { q: "Funções Lambda são conhecidas por serem:", opts: ["Com nome", "Longas", "Anônimas", "Definidas com 'def'"], a: 2 },
+                    { q: "Qual a sintaxe correta para uma função lambda?", opts: ["def x: y", "func x -> y", "lambda x: x*2", "lambda (x): x*2"], a: 2 },
+                    { q: "Lambda é comumente usada como um argumento simples para quais funções built-in?", opts: ["while e if", "classes", "map, filter, sorted", "módulos"], a: 2 },
+                    { q: "Uma função lambda pode conter múltiplas expressões ou comandos (multilinha)?", opts: ["Sim", "Não, apenas uma única expressão", "Apenas se usar ponto e vírgula", "Apenas dentro de classes"], a: 1 },
+                    { q: "Qual o resultado de `(lambda x, y: x - y)(10, 3)`?", opts: ["13", "7", "3", "Error"], a: 1 },
+                    { q: "Para ordenar uma lista de tuplas `[(1, 'b'), (2, 'a')]` pelo segundo elemento, qual lambda seria usada em `key`?", opts: ["lambda x: x[0]", "lambda x: x[1]", "lambda x: x", "lambda x: x.sort()"], a: 1 },
+                    { q: "Qual o resultado de `list(filter(lambda x: x % 2 == 0, [1, 2, 3, 4]))`?", opts: ["[1, 3]", "[2, 4]", "[2, 3, 4]", "Error"], a: 1 },
+                    { q: "O uso de lambdas é uma característica da programação...", opts: ["Orientada a Objetos", "Funcional", "Imperativa", "Procedural"], a: 1 },
+                    { q: "Qual é o principal limite de uma função lambda em Python?", opts: ["Não pode receber argumentos", "Não pode retornar um valor", "Só pode conter uma expressão", "Só pode ser usada com `map`"], a: 2 },
+                    { q: "Se `f = lambda a: a + 10`, qual o resultado de `f(5)`?", opts: ["10", "15", "5", "Error"], a: 1 }
+                ]
+            },
+            "2-1": {
+                learn: `<h3>📚 RegEx (Expressões Regulares):</h3><ul><li>Sequência de caracteres que forma um padrão de busca.</li><li>Módulo Python: <strong>re</strong>.</li><li>Funções: <code>re.search()</code>, <code>re.match()</code>, <code>re.findall()</code>, <code>re.sub()</code>.</li></ul><h3>💻 Exemplo:</h3><pre>import re\n\ntexto = "O ano é 2024"\n\n# Procura por dígitos\npadrao = r"\\d+"\n\nresultado = re.findall(padrao, texto)\nprint(resultado) # ['2024']</pre>`,
+                test: [
+                    { q: "Qual módulo Python é usado para trabalhar com Expressões Regulares (RegEx)?", opts: ["regex", "re_match", "re", "pattern"], a: 2 },
+                    { q: "O que a função `re.findall(padrao, texto)` retorna?", opts: ["A primeira ocorrência", "True/False", "Todas as ocorrências em uma lista", "A string original"], a: 2 },
+                    { q: "Qual padrão RegEx representa um dígito (0-9)?", opts: ["`\\a`", "`\\w`", "`\\d`", "`\\s`"], a: 2 },
+                    { q: "O que a função `re.search()` faz?", opts: ["Substitui uma string", "Busca o padrão em qualquer lugar da string", "Busca o padrão apenas no início da string", "Retorna todas as ocorrências"], a: 1 },
+                    { q: "O que o metacaractere `.` (ponto) representa em RegEx?", opts: ["O final da linha", "Um espaço em branco", "Qualquer caractere (exceto nova linha)", "Um dígito"], a: 2 },
+                    { q: "Qual função é usada para substituir todas as ocorrências de um padrão por uma string de substituição?", opts: ["`re.replace()`", "`re.sub()`", "`re.change()`", "`re.split()`"], a: 1 },
+                    { q: "O que o quantificador `*` significa em RegEx?", opts: ["Uma ou mais ocorrências", "Zero ou mais ocorrências", "Exatamente uma ocorrência", "Zero ou uma ocorrência"], a: 1 },
+                    { q: "Qual o resultado de `re.match(r'Hello', 'Hello World')`?", opts: ["Retorna um objeto match", "Retorna None", "Retorna 'Hello'", "Gera um erro"], a: 0 },
+                    { q: "O prefixo `r` em uma string (ex: `r'padrao'`) é usado para criar:", opts: ["String Unicode", "Raw String (String Bruta)", "F-string", "String de bytes"], a: 1 },
+                    { q: "Qual padrão RegEx corresponde a um caractere de espaço em branco (space, tab, newline)?", opts: ["`\\w`", "`\\d`", "`\\s`", "`\\b`"], a: 2 }
+                ]
+            },
+            "2-2": {
+                learn: `<h3>📚 Datetime:</h3><ul><li>Módulo padrão para manipulação de datas e horas.</li><li>Objetos principais: <code>date</code>, <code>time</code>, <code>datetime</code>, <code>timedelta</code>.</li><li>Formatação: <code>strftime()</code> (datetime para string), <code>strptime()</code> (string para datetime).</li></ul><h3>💻 Exemplo:</h3><pre>from datetime import datetime, timedelta\n\nagora = datetime.now()\n\n# Formatação\nprint(agora.strftime("%d/%m/%Y %H:%M"))\n\n# Timedelta (cálculo de tempo)\ndepois = agora + timedelta(days=7)</pre>`,
+                test: [
+                    { q: "Qual objeto representa a diferença entre duas datas ou durações de tempo?", opts: ["datetime", "date", "time", "timedelta"], a: 3 },
+                    { q: "Qual função é usada para formatar um objeto `datetime` em uma string com um formato específico (ex: dd/mm/yyyy)?", opts: ["`format_str`", "`to_string`", "`strftime`", "`strptime`"], a: 2 },
+                    { q: "Qual o módulo padrão do Python para manipulação de datas e horas?", opts: ["time", "data", "date_time", "datetime"], a: 3 },
+                    { q: "Qual método é usado para **criar** um objeto `datetime` a partir de uma string de data (Parsing)?", opts: ["`datetime.now()`", "`datetime.date()`", "`datetime.strptime()`", "`datetime.strftime()`"], a: 2 },
+                    { q: "O que o atributo `.year` de um objeto `datetime` retorna?", opts: ["O ano atual", "O ano como uma string", "O componente ano como inteiro", "O ano em formato ISO"], a: 2 },
+                    { q: "Qual dos seguintes objetos não inclui informações de data (apenas hora)?", opts: ["`datetime`", "`date`", "`time`", "`timedelta`"], a: 2 },
+                    { q: "Para adicionar 5 dias a uma data, qual objeto do módulo `datetime` você usaria?", opts: ["`date`", "`time`", "`datetime`", "`timedelta`"], a: 3 },
+                    { q: "Qual é o código de formato para representar o mês como nome completo (ex: Dezembro) em `strftime`?", opts: ["`%m`", "`%M`", "`%b`", "`%B`"], a: 3 },
+                    { q: "O que o método `datetime.today()` retorna?", opts: ["A data atual com a hora do sistema", "Apenas a data atual", "A hora atual", "O tempo decorrido desde 1970"], a: 0 },
+                    { q: "Ao subtrair dois objetos `datetime`, o resultado é um objeto do tipo:", opts: ["`date`", "`time`", "`int`", "`timedelta`"], a: 3 }
+                ]
+            },
+            "2-3": {
+                learn: `<h3>📚 JSON e APIs:</h3><ul><li><strong>JSON:</strong> Formato de dados leve (JavaScript Object Notation).</li><li>Módulo Python: <strong>json</strong> (para serializar/desserializar).</li><li>Módulo <strong>requests</strong> (biblioteca externa, <code>pip install requests</code>) para fazer chamadas HTTP (GET, POST).</li></ul><h3>💻 Exemplo:</h3><pre>import requests\n\n# API Call\nresponse = requests.get('https://api.github.com/users/octocat')\ndata = response.json()\nprint(data['login'])\n\n# JSON Serialização\nimport json\nusuario = {'nome': 'Zoe', 'idade': 30}\nj_data = json.dumps(usuario)</pre>`,
+                test: [
+                    { q: "Qual módulo (não padrão) é amplamente utilizado para fazer requisições HTTP (GET, POST) em Python?", opts: ["http", "json", "socket", "requests"], a: 3 },
+                    { q: "O que a função `json.loads()` faz?", opts: ["Converte Python (dict/list) para JSON (string)", "Converte JSON (string) para Python (dict/list)", "Lê um arquivo JSON", "Serializa JSON"], a: 1 },
+                    { q: "O formato de dados JSON (JavaScript Object Notation) é estruturado em pares de:", opts: ["Tags e atributos", "Chave e valor", "Índice e elemento", "Linha e coluna"], a: 1 },
+                    { q: "Qual a função do método `.json()` em um objeto de resposta HTTP do módulo `requests`?", opts: ["Retorna o texto HTML da resposta", "Converte o corpo da resposta JSON em um dicionário Python", "Retorna o código de status HTTP", "Retorna os headers da resposta"], a: 1 },
+                    { q: "O que o módulo padrão `json.dumps()` faz?", opts: ["Desserializa (lê) JSON", "Serializa (escreve) Python para JSON", "Lê de um arquivo JSON", "Envia uma requisição"], a: 1 },
+                    { q: "Qual método HTTP é usado para **obter** um recurso de uma API?", opts: ["POST", "PUT", "DELETE", "GET"], a: 3 },
+                    { q: "Qual código de status HTTP indica uma requisição bem-sucedida (OK)?", opts: ["404", "500", "200", "301"], a: 2 },
+                    { q: "O que é 'serialização' no contexto de JSON e Python?", opts: ["O processo de transformar texto em binário", "O processo de transformar objetos complexos Python em um formato de string (como JSON)", "O processo de enviar dados pela rede", "O processo de fazer uma requisição HTTP"], a: 1 },
+                    { q: "Qual método é usado para salvar um objeto Python em JSON em um arquivo (dump to file)?", opts: ["`json.loads()`", "`json.load()`", "`json.dump()`", "`json.dumps()`"], a: 2 },
+                    { q: "Qual das seguintes estruturas de dados Python corresponde a um array/lista JSON?", opts: ["Dicionário", "Set", "Tupla", "Lista"], a: 3 }
+                ]
+            },
+            "2-4": {
+                learn: `<h3>📚 Threading (Multithreading):</h3><ul><li>Execução paralela de código. Threads compartilham o mesmo espaço de memória do processo (GIL limita o paralelismo real em CPU-bound tasks).</li><li>Módulo Python: <strong>threading</strong>.</li><li>Útil para tarefas I/O-bound (como esperar por API/Arquivo).</li></ul><h3>💻 Exemplo:</h3><pre>import threading\nimport time\n\ndef worker(num):\n    time.sleep(1) # Simula tarefa I/O\n    print(f"Trabalhador {num} terminado")\n\nt1 = threading.Thread(target=worker, args=(1,))\nt2 = threading.Thread(target=worker, args=(2,))\n\nt1.start()\nt2.start()\nt1.join()</pre>`,
+                test: [
+                    { q: "Em Python, Threads são ideais para otimizar quais tipos de tarefas?", opts: ["CPU-bound", "Memory-bound", "I/O-bound (E/S)", "Network-bound"], a: 2 },
+                    { q: "O que o método `thread.join()` faz?", opts: ["Termina a thread imediatamente", "Inicia a thread", "Faz o programa principal esperar a thread terminar", "Combina threads"], a: 2 },
+                    { q: "Qual módulo padrão é usado para criar e gerenciar threads?", opts: ["multithread", "thread", "threading", "process"], a: 2 },
+                    { q: "Qual mecanismo impede que múltiplas threads executem bytecode Python ao mesmo tempo (em um único processo)?", opts: ["GIL (Global Interpreter Lock)", "Thread Pool", "Lock Manager", "Semaphore"], a: 0 },
+                    { q: "Qual é o principal problema de segurança ao usar threads?", opts: ["Deadlocks", "Vazamento de memória", "Corrida de dados (Race Condition)", "Exceções"], a: 2 },
+                    { q: "Qual a função do `Lock` no threading?", opts: ["Inicia a thread", "Prevenir que threads acessem recursos compartilhados ao mesmo tempo", "Garantir que a thread termine", "Criar um novo processo"], a: 1 },
+                    { q: "O que acontece se você não usar `join()` após iniciar uma thread?", opts: ["A thread principal para", "A thread secundária é automaticamente cancelada", "A thread secundária pode continuar rodando mesmo após o programa principal terminar", "Gera um erro de tempo de execução"], a: 2 },
+                    { q: "Threads compartilham o mesmo _____ do processo que as criou.", opts: ["ID do Processo", "Código Fonte", "Espaço de memória", "Variável global"], a: 2 },
+                    { q: "Para tarefas I/O-bound, por que o threading ainda é útil apesar do GIL?", opts: ["O GIL é desativado para I/O", "O Python libera o GIL enquanto a thread espera por I/O", "A thread I/O não usa o interpretador Python", "Threading é sempre mais rápido que Single-threading"], a: 1 },
+                    { q: "Qual o resultado de `t.start()`?", opts: ["Inicia a thread imediatamente", "Prepara a thread para o `join()`", "Define a função de destino", "Define o nome da thread"], a: 0 }
+                ]
+            },
+            "2-5": {
+                learn: `<h3>📚 Multiprocessing:</h3><ul><li>Execução paralela que usa processos separados (cada um com seu próprio interpretador e memória).</li><li>Módulo Python: <strong>multiprocessing</strong>.</li><li>Útil para tarefas CPU-bound (contorna o GIL).</li></ul><h3>💻 Exemplo:</h3><pre>import multiprocessing\n\ndef worker(num):\n    print(f"Processo {num} iniciado")\n\nif __name__ == '__main__':\n    p1 = multiprocessing.Process(target=worker, args=(1,))\n    p2 = multiprocessing.Process(target=worker, args=(2,))\n    p1.start()\n    p2.start()</pre>`,
+                test: [
+                    { q: "Multiprocessing é a melhor escolha para quais tipos de tarefas, pois contorna o GIL?", opts: ["I/O-bound", "Compartilhamento de memória", "CPU-bound (uso intensivo de processador)", "Tasks simples"], a: 2 },
+                    { q: "Cada processo criado no multiprocessing possui seu próprio _____.", opts: ["ID da Thread", "Interpretador Python e espaço de memória", "GIL compartilhado", "Loop de eventos"], a: 1 },
+                    { q: "O que o GIL (Global Interpreter Lock) significa para o Multiprocessing?", opts: ["O GIL limita cada processo a um core", "O GIL não afeta processos separados, permitindo paralelismo real", "O GIL é ativado apenas no Multiprocessing", "O GIL é desativado no Multiprocessing"], a: 1 },
+                    { q: "Qual módulo padrão é usado para gerenciar processos?", opts: ["threading", "subprocess", "multiprocessing", "concurrent"], a: 2 },
+                    { q: "Qual o papel do `if __name__ == '__main__':` ao usar `multiprocessing`?", opts: ["Obriga o uso de threads", "Garante que o código de inicialização do processo não seja executado recursivamente", "Define variáveis globais", "É necessário apenas em sistemas Linux"], a: 1 },
+                    { q: "Qual objeto do módulo `multiprocessing` é usado para iniciar uma tarefa em um processo separado?", opts: ["`Thread`", "`Task`", "`Process`", "`Worker`"], a: 2 },
+                    { q: "Qual mecanismo é tipicamente usado para compartilhar dados entre processos (já que a memória não é compartilhada)?", opts: ["Variáveis globais", "Pipes ou Queues", "Locks", "Condicionais"], a: 1 },
+                    { q: "O que é um 'Pool' no `multiprocessing`?", opts: ["Um tipo de Lock", "Um conjunto de Threads", "Um pool de processos de worker que podem executar tarefas em paralelo", "Um objeto para comunicação entre processos"], a: 2 },
+                    { q: "Se a comunicação entre processos é feita através de `Queue`, os dados são passados por:", opts: ["Referência de memória", "Cópia (pickling)", "Variável global", "Socket"], a: 1 },
+                    { q: "Qual o método usado para iniciar um novo processo?", opts: ["`run()`", "`execute()`", "`start()`", "`join()`"], a: 2 }
+                ]
+            },
+            "2-6": {
+                learn: `<h3>📚 Context Managers:</h3><ul><li>Mecanismo que gerencia recursos (arquivos, conexões de banco de dados, locks) para garantir que sejam abertos e fechados corretamente.</li><li>Usa a palavra-chave <strong>with</strong>.</li><li>Implementa os métodos <strong>__enter__</strong> e <strong>__exit__</strong>.</li></ul><h3>💻 Exemplo:</h3><pre># Abre e fecha o arquivo automaticamente\nwith open('file.txt', 'r') as f:\n    conteudo = f.read()\n# O arquivo é fechado ao sair do bloco 'with'\n\n# Criando um Context Manager customizado\nclass Log:\n    def __enter__(self): return self\n    def __exit__(self, exc_type, exc_val, exc_tb): pass</pre>`,
+                test: [
+                    { q: "Qual palavra-chave é usada para iniciar um Context Manager?", opts: ["try", "use", "with", "finally"], a: 2 },
+                    { q: "Qual método do Context Manager é chamado **na saída** do bloco `with`?", opts: ["`__start__`", "`__leave__`", "`__exit__`", "`__close__`"], a: 2 },
+                    { q: "Qual a principal vantagem de usar Context Managers?", opts: ["Economia de código", "Melhor perfomance de loops", "Gerenciamento seguro e automático de recursos (ex: fechar arquivos)", "Não precisar de exceções"], a: 2 },
+                    { q: "Qual método do Context Manager é chamado **na entrada** do bloco `with`?", opts: ["`__enter__`", "`__init__`", "`__start__`", "`__new__`"], a: 0 },
+                    { q: "O que acontece com o recurso gerenciado quando a execução sai do bloco `with` (mesmo se houver erro)?", opts: ["O recurso é mantido aberto", "O recurso é fechado pelo método `__exit__`", "Um aviso é exibido", "O programa para"], a: 1 },
+                    { q: "O que o módulo `contextlib` oferece para criar Context Managers sem classes?", opts: ["A função `with_lock`", "O decorador `@contextmanager`", "A função `try_with`", "A função `cleanup`"], a: 1 },
+                    { q: "Se ocorrer uma exceção dentro do bloco `with`, qual método a recebe como argumentos para tratamento?", opts: ["`__init__`", "`__enter__`", "`__exit__`", "`__handle_error__`"], a: 2 },
+                    { q: "Qual o resultado de `f` na instrução `with open('file.txt', 'r') as f:`?", opts: ["O nome do arquivo", "O conteúdo do arquivo", "O objeto de arquivo retornado por `__enter__`", "O resultado da função `open`"], a: 2 },
+                    { q: "Qual o principal recurso que o `open()` gerencia automaticamente com o `with`?", opts: ["Memória RAM", "Conexão de rede", "O fechamento do arquivo", "O loop de eventos"], a: 2 },
+                    { q: "Qual o resultado de `with Lock() as lock:`?", opts: ["`lock` é uma variável booleana", "Adquire o lock e o libera automaticamente ao sair", "Define um novo lock", "Gera um erro"], a: 1 }
+                ]
+            },
+            "2-7": {
+                learn: `<h3>📚 Type Hints (Anotações de Tipo):</h3><ul><li>Sintaxe para indicar os tipos esperados de argumentos de funções e valores de retorno.</li><li>Não afeta a execução (Python ainda é dinamicamente tipado), mas ajuda ferramentas de análise estática (Mypy) e IDEs.</li><li>Módulo: <strong>typing</strong>.</li></ul><h3>💻 Exemplo:</h3><pre>from typing import List\n\ndef somar(a: int, b: int) -> int:\n    return a + b\n\ndef obter_nomes(dados: List[str]) -> List[str]:\n    return dados\n\nsomar(5, 3) # Funciona</pre>`,
+                test: [
+                    { q: "Type Hints (Anotações de Tipo) afeta a execução em tempo de execução do Python?", opts: ["Sim, forçando o tipo", "Não, são apenas anotações para ferramentas estáticas", "Apenas em modo de debug", "Apenas em módulos importados"], a: 1 },
+                    { q: "Qual módulo padrão deve ser importado para usar tipos complexos (ex: `List`, `Dict`)?", opts: ["types", "annotations", "typing", "hints"], a: 2 },
+                    { q: "Qual a sintaxe correta para o tipo de retorno de uma função?", opts: ["`-> tipo`", "`: tipo`", "`returns tipo`", "`=> tipo`"], a: 0 },
+                    { q: "Qual ferramenta é usada para realizar a checagem de tipos estática em código Python com Type Hints?", opts: ["Pylint", "Pytest", "Mypy", "Black"], a: 2 },
+                    { q: "Para anotar uma variável que pode ser um `int` ou `None`, você deve usar:", opts: ["`Optional[int]`", "`None | int` (ou `Union[int, None]`)", "`int, None`", "`Any`"], a: 1 },
+                    { q: "Qual o principal benefício de usar Type Hints?", opts: ["Reduzir o tamanho do código", "Melhorar a documentação e auxiliar o autocompletar na IDE", "Aumentar a velocidade de execução", "Substituir o construtor"], a: 1 },
+                    { q: "O que o tipo `Any` do módulo `typing` significa?", opts: ["Qualquer tipo é aceito, desativando a checagem de tipo", "Apenas tipos primitivos", "Tipos desconhecidos", "Tipos complexos"], a: 0 },
+                    { q: "Qual a sintaxe para anotar o tipo de um argumento de função?", opts: ["`arg => tipo`", "`arg: tipo`", "`tipo arg`", "`@arg(tipo)`"], a: 1 },
+                    { q: "Qual a versão mínima do Python que introduziu o uso de `list[int]` para anotação de tipos genéricos (PEP 585)?", opts: ["3.6", "3.7", "3.8", "3.9"], a: 3 },
+                    { q: "As anotações de tipo são armazenadas em qual atributo da função?", opts: ["`__doc__`", "`__dict__`", "`__annotations__`", "`__type__`"], a: 2 }
+                ]
+            },
+            "2-8": {
+                learn: `<h3>📚 Testing:</h3><ul><li>Escrever código para verificar a funcionalidade do código principal.</li><li><strong>unittest:</strong> Módulo padrão (mais parecido com JUnit).</li><li><strong>pytest:</strong> Framework popular, mais simples e poderoso.</li></ul><h3>💻 Exemplo (pytest):</h3><pre># funcoes.py\ndef inc(x): return x + 1\n\n# test_funcoes.py\ndef test_answer():\n    assert inc(3) == 4\n\n# Para executar:\n# pytest</pre>`,
+                test: [
+                    { q: "Qual framework de teste popular é conhecido por sua sintaxe simples e pelo uso da palavra-chave `assert`?", opts: ["unittest", "testit", "simpletest", "pytest"], a: 3 },
+                    { q: "A palavra-chave essencial usada para verificar se uma condição é verdadeira em testes é:", opts: ["test", "verify", "check", "assert"], a: 3 },
+                    { q: "O módulo `unittest` é mais parecido com qual framework de testes Java?", opts: ["Spring", "Hibernate", "JUnit", "Maven"], a: 2 },
+                    { q: "Qual é o principal foco de um **Teste Unitário**?", opts: ["O sistema inteiro", "Integração DB", "Funcionalidades isoladas (funções/métodos)", "Deploy"], a: 2 },
+                    { q: "Qual o nome do arquivo que o `pytest` procura por padrão para encontrar testes?", opts: ["`main.py`", "`test.py`", "Arquivos que começam ou terminam com `test_`", "`runner.py`"], a: 2 },
+                    { q: "Qual método do `unittest.TestCase` é usado para verificar se dois valores são iguais?", opts: ["`assertEqual`", "`assertTrue`", "`assertIs`", "`assert_equal`"], a: 0 },
+                    { q: "O que é um 'mock' em testes?", opts: ["Um tipo de exceção", "Um objeto substituto que simula o comportamento de um objeto real (dependência)", "O resultado de um teste falho", "Um teste de integração"], a: 1 },
+                    { q: "Qual o principal benefício de escrever testes?", opts: ["Garantir a ausência total de bugs", "Reduzir o tempo de compilação", "Melhorar a confiança no código e facilitar refatorações", "Aumentar a velocidade de execução"], a: 2 },
+                    { q: "Qual o resultado de `assert 1 == 2`?", opts: ["True", "False", "AssertionError", "SyntaxError"], a: 2 },
+                    { q: "Em Testes de Integração, o foco está em verificar a comunicação entre:", opts: ["Duas funções", "Componentes internos isolados", "Múltiplos subsistemas (API, DB, serviços externos)", "Variáveis locais"], a: 2 }
+                ]
+            },
+            "2-9": {
+                learn: `<h3>📚 Virtual Env:</h3><ul><li>Criação de ambientes isolados para projetos Python.</li><li>Isso evita conflitos de dependências entre projetos.</li><li>Ferramentas: <strong>venv</strong> (padrão), <strong>pipenv</strong>, <strong>conda</strong>.</li></ul><h3>💻 Exemplo:</h3><pre># Criar ambiente com venv\npython -m venv nome_do_env\n\n# Ativar (Linux/macOS)\nsource nome_do_env/bin/activate\n\n# Ativar (Windows)\nnome_do_env\\Scripts\\activate\n\n# Desativar\ndeactivate</pre>`,
+                test: [
+                    { q: "Qual é a principal função de um ambiente virtual (Virtual Env)?", opts: ["Instalar o Python no sistema", "Executar código rapidamente", "Isolar as dependências de um projeto de outros projetos e do sistema operacional", "Publicar código"], a: 2 },
+                    { q: "Qual comando usa o módulo padrão do Python para criar um ambiente virtual?", opts: ["pip install venv", "python new venv", "python -m venv nome_do_env", "venv create"], a: 2 },
+                    { q: "Qual comando é usado para **desativar** o ambiente virtual?", opts: ["close_env", "deactivate", "end_venv", "exit"], a: 1 },
+                    { q: "O que acontece com o comando `pip install library` quando o ambiente virtual está **ativo**?", opts: ["Instala globalmente no sistema", "Instala a biblioteca apenas no ambiente virtual", "Instala usando o Python principal", "Gera um erro"], a: 1 },
+                    { q: "Qual comando é usado para listar os pacotes instalados no ambiente virtual ativo?", opts: ["`pip show`", "`pip list`", "`pip check`", "`pip packages`"], a: 1 },
+                    { q: "Qual arquivo é usado para recriar o ambiente de dependências em outro computador/ambiente?", opts: ["`config.ini`", "`setup.py`", "`requirements.txt`", "`package.json`"], a: 2 },
+                    { q: "Qual ferramenta popular de gerenciamento de dependências e ambientes virtuais que substitui o `pip` e `venv`?", opts: ["Virtualenv", "pipenv", "Conda", "Pyenv"], a: 1 },
+                    { q: "O que o arquivo `activate` faz em um ambiente virtual?", opts: ["Instala todos os pacotes", "Muda o PATH do terminal para que `python` e `pip` apontem para o ambiente virtual", "Cria o ambiente virtual", "Desativa o ambiente virtual"], a: 1 },
+                    { q: "Ambientes virtuais resolvem principalmente o problema de:", opts: ["Lentidão no código", "Conflito de versões de bibliotecas entre projetos", "Escopo de variáveis", "Herança de classes"], a: 1 },
+                    { q: "Qual das seguintes ferramentas de ambiente virtual é mais focada na comunidade científica/data science?", opts: ["venv", "pipenv", "Pyenv", "Conda"], a: 3 }
+                ]
+            },
+            // ######################################################################
+            // NÍVEL 3: DESENVOLVIMENTO WEB BACKEND (10 QUESTÕES CADA)
+            // ######################################################################
+            "3-0": {
+                learn: `<h3>📚 Introdução a Servidores:</h3><ul><li><strong>HTTP:</strong> Protocolo de Transferência de Hipertexto (métodos: GET, POST, PUT, DELETE).</li><li><strong>REST:</strong> Arquitetura para APIs (Stateless, Endpoints, Recursos).</li><li><strong>WSGI/ASGI:</strong> Interfaces que permitem que frameworks Python se comuniquem com servidores web.</li></ul><h3>💻 Exemplo:</h3><pre># Exemplo de requisição GET (Flask)\n@app.route('/usuarios', methods=['GET'])\ndef listar_usuarios():\n    # ... lógica ...\n    return jsonify(usuarios)</pre>`,
+                test: [
+                    { q: "Qual método HTTP é usado para **criar** um novo recurso no servidor?", opts: ["GET", "PUT", "DELETE", "POST"], a: 3 },
+                    { q: "A principal característica de uma API **RESTful** é ser:", opts: ["Stateful", "Synchronous", "Stateless (sem estado)", "Monolithic"], a: 2 },
+                    { q: "Qual das interfaces é usada para servidores e frameworks Python lidarem com código **assíncrono**?", opts: ["WSGI", "ASGI", "HTTP", "REST"], a: 1 },
+                    { q: "Qual método HTTP é usado para **modificar/atualizar** um recurso existente (ou criá-lo se não existir)?", opts: ["POST", "PATCH", "GET", "PUT"], a: 3 },
+                    { q: "O que o código de status HTTP **404** significa?", opts: ["Sucesso", "Erro de servidor", "Recurso não encontrado", "Redirecionamento"], a: 2 },
+                    { q: "O que é um 'Endpoint' em uma API RESTful?", opts: ["O servidor web", "A URL específica que representa um recurso (ex: `/api/usuarios`)", "Um método HTTP", "O banco de dados"], a: 1 },
+                    { q: "O que o protocolo HTTP define?", opts: ["A estrutura do banco de dados", "Como as páginas são renderizadas", "O protocolo para comunicação entre cliente e servidor", "O formato JSON"], a: 2 },
+                    { q: "Qual a principal diferença de responsabilidade entre WSGI e o Flask/Django?", opts: ["WSGI é a aplicação, o framework é o servidor", "WSGI é a interface para o servidor web, o framework é a lógica da aplicação", "O framework lida com sockets, o WSGI com requisições", "São a mesma coisa"], a: 1 },
+                    { q: "Qual método HTTP é usado para **remover** um recurso?", opts: ["REMOVE", "POST", "DELETE", "PATCH"], a: 2 },
+                    { q: "O que o termo 'Recurso' (Resource) se refere em REST?", opts: ["Uma URL", "Um método HTTP", "Qualquer dado ou serviço acessível pela API (ex: um usuário, um produto)", "O servidor"], a: 2 }
+                ]
+            },
+            "3-1": {
+                learn: `<h3>📚 Flask Básico:</h3><ul><li>Microframework Web (leve e flexível).</li><li><strong>Rotas:</strong> Mapeamento de URLs para funções Python.</li><li><strong>Templates:</strong> Uso de Jinja2 para renderizar HTML.</li><li><strong>Requisições:</strong> Acessar dados de formulário/JSON (objeto <code>request</code>).</li></ul><h3>💻 Exemplo:</h3><pre>from flask import Flask, render_template\n\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return render_template('index.html')\n\nif __name__ == '__main__':\n    app.run(debug=True)</pre>`,
+                test: [
+                    { q: "Qual framework de template o Flask utiliza por padrão para renderizar HTML?", opts: ["Django Templates", "Mako", "Jinja2", "Tornado"], a: 2 },
+                    { q: "O Flask é classificado como um:", opts: ["Framework Full-Stack", "Microframework", "ORM", "Servidor Web"], a: 1 },
+                    { q: "Qual decorador é usado para mapear uma URL a uma função Python (rota)?", opts: ["`@app.run`", "`@app.route`", "`@app.get`", "`@route`"], a: 1 },
+                    { q: "Qual objeto do Flask contém os dados da requisição HTTP (ex: dados de formulário, JSON)?", opts: ["`response`", "`url_for`", "`request`", "`app`"], a: 2 },
+                    { q: "O que a instrução `app = Flask(__name__)` faz?", opts: ["Inicia o servidor", "Define a rota principal", "Cria a instância da aplicação Flask", "Define as variáveis de ambiente"], a: 2 },
+                    { q: "A função `url_for()` no Flask é usada para:", opts: ["Obter o URL da requisição atual", "Redirecionar o usuário", "Construir URLs dinamicamente a partir do nome da função da rota", "Fazer requisições externas"], a: 2 },
+                    { q: "Qual é o nome do diretório padrão onde o Flask procura por templates (arquivos HTML)?", opts: ["`html`", "`static`", "`views`", "`templates`"], a: 3 },
+                    { q: "Para obter dados de um formulário POST, qual atributo do objeto `request` é comumente usado?", opts: ["`request.json`", "`request.data`", "`request.form`", "`request.headers`"], a: 2 },
+                    { q: "O que a flag `debug=True` no `app.run()` faz?", opts: ["Força o uso de HTTPS", "Habilita o modo de produção", "Habilita o depurador e o recarregamento automático", "Desativa o log"], a: 2 },
+                    { q: "Para retornar uma resposta JSON em uma rota Flask, o que deve ser importado junto com Flask?", opts: ["`json`", "`jsonify`", "`JSONResponse`", "`APIResponse`"], a: 1 }
+                ]
+            },
+            "3-2": {
+                learn: `<h3>📚 Django Básico:</h3><ul><li>Framework Full-Stack (completo, "baterias incluídas").</li><li><strong>MVC/MTV:</strong> Model (Dados), View (Lógica), Template (HTML).</li><li><strong>Admin:</strong> Interface de administração automática.</li><li>Comandos: <code>manage.py runserver</code>, <code>manage.py migrate</code>.</li></ul><h3>💻 Exemplo:</h3><pre># settings.py\n# INSTALLED_APPS = ['blog', ...]\n\n# urls.py\nfrom django.urls import path\nfrom . import views\n\nurlpatterns = [\n    path('', views.home, name='home'),\n]\n\n# views.py\nfrom django.shortcuts import render\ndef home(request):\n    return render(request, 'home.html')</pre>`,
+                test: [
+                    { q: "Qual comando é usado para iniciar o servidor de desenvolvimento do Django?", opts: ["python server.py", "django start", "manage.py runserver", "python run_app"], a: 2 },
+                    { q: "O Django adota o padrão de arquitetura mais próximo de:", opts: ["Service-Oriented", "MVC (Model-View-Controller)", "MTV (Model-Template-View)", "Microservices"], a: 2 },
+                    { q: "O que é o arquivo `manage.py` em um projeto Django?", opts: ["Um arquivo de configuração", "Ferramenta de linha de comando para tarefas administrativas", "Biblioteca externa", "O nome do projeto"], a: 1 },
+                    { q: "Qual o nome dado ao componente que lida com a lógica de requisição e retorna uma resposta (a função ou classe) no Django?", opts: ["Model", "Template", "URL", "View"], a: 3 },
+                    { q: "Qual comando deve ser executado para aplicar as migrações no banco de dados?", opts: ["`manage.py makemigrations`", "`manage.py startapp`", "`manage.py migrate`", "`manage.py syncdb`"], a: 2 },
+                    { q: "Qual o arquivo onde as URLs são mapeadas para Views no Django?", opts: ["`settings.py`", "`views.py`", "`urls.py`", "`models.py`"], a: 2 },
+                    { q: "O que a interface de administração automática do Django permite que você faça sem código?", opts: ["Configurar rotas", "Gerenciar usuários, modelos e dados do banco de dados", "Criar templates HTML", "Fazer deploy"], a: 1 },
+                    { q: "O que a instrução `manage.py makemigrations` faz?", opts: ["Cria as tabelas no DB", "Cria os arquivos Python que descrevem as mudanças nos modelos", "Inicia o servidor", "Limpa o cache"], a: 1 },
+                    { q: "No Django, o componente 'Model' é responsável por:", opts: ["A lógica de negócio", "A interface do usuário", "A interação e estrutura do banco de dados", "O mapeamento de URLs"], a: 2 },
+                    { q: "Qual dos seguintes é um módulo de template do Django (e também usado pelo Flask)?", opts: ["TemplatePy", "Jinja2", "Mustache", "Pug"], a: 1 }
+                ]
+            },
+            "3-3": {
+                learn: `<h3>📚 Banco de Dados (SQL):</h3><ul><li><strong>CRUD:</strong> Create, Read, Update, Delete (operações básicas).</li><li><strong>Conexão:</strong> Usar módulos como <code>sqlite3</code>, <code>psycopg2</code> (PostgreSQL), <code>mysql-connector</code>.</li><li>Dominar SQL básico é essencial para o backend.</li></ul><h3>💻 Exemplo (SQLite):</h3><pre>import sqlite3\nconn = sqlite3.connect('database.db')\ncursor = conn.cursor()\ncursor.execute("CREATE TABLE users (id INTEGER, name TEXT)")\ncursor.execute("INSERT INTO users VALUES (1, 'Alice')")\nconn.commit()\nconn.close()</pre>`,
+                test: [
+                    { q: "A operação 'R' na sigla CRUD significa:", opts: ["Relate", "Retrieve", "Read", "Revert"], a: 2 },
+                    { q: "Qual comando SQL é usado para adicionar novos dados em uma tabela?", opts: ["UPDATE", "SELECT", "DELETE", "INSERT INTO"], a: 3 },
+                    { q: "Qual comando é essencial em transações SQL para salvar permanentemente as alterações no banco de dados?", opts: ["save", "execute", "commit", "insert"], a: 2 },
+                    { q: "Qual comando SQL é usado para recuperar dados de uma tabela?", opts: ["GET", "RETRIEVE", "SELECT", "READ"], a: 2 },
+                    { q: "Qual módulo padrão do Python é usado para interagir com o banco de dados SQLite?", opts: ["sqlite", "sqlite3", "psycopg2", "dbconnect"], a: 1 },
+                    { q: "O que o comando `conn.cursor()` faz em uma conexão de banco de dados?", opts: ["Fecha a conexão", "Executa um comando SQL", "Cria um objeto cursor para executar comandos e buscar resultados", "Salva as alterações"], a: 2 },
+                    { q: "Qual cláusula SQL é usada para filtrar linhas de uma tabela com base em uma condição?", opts: ["GROUP BY", "ORDER BY", "WHERE", "HAVING"], a: 2 },
+                    { q: "A operação 'D' em CRUD significa:", opts: ["Duplicate", "Data", "Delete", "Deploy"], a: 2 },
+                    { q: "Qual tipo de dado em SQL armazena números inteiros?", opts: ["VARCHAR", "TEXT", "INTEGER", "BOOLEAN"], a: 2 },
+                    { q: "Para que o módulo `psycopg2` é usado?", opts: ["Conexão com SQLite", "Conexão com MySQL", "Conexão com PostgreSQL", "Conexão com Oracle"], a: 2 }
+                ]
+            },
+            "3-4": {
+                learn: `<h3>📚 ORMs (Mapeamento Objeto-Relacional):</h3><ul><li>Ferramentas que permitem interagir com o DB usando classes e objetos Python (em vez de SQL puro).</li><li><strong>Django ORM:</strong> Integrado ao Django.</li><li><strong>SQLAlchemy:</strong> ORM independente (Full-featured e flexível).</li></ul><h3>💻 Exemplo (SQLAlchemy):</h3><pre>from sqlalchemy import create_engine, Column, Integer, String\nfrom sqlalchemy.orm import declarative_base, sessionmaker\n\nBase = declarative_base()\n\nclass User(Base):\n    __tablename__ = 'users'\n    id = Column(Integer, primary_key=True)\n    name = Column(String)\n\n# Criar tabela e sessão para queries...</pre>`,
+                test: [
+                    { q: "A sigla ORM significa:", opts: ["Object Relation Model", "Object Relational Mapping (Mapeamento Objeto-Relacional)", "Online Resource Management", "Organized Reference Module"], a: 1 },
+                    { q: "Qual é a principal vantagem de um ORM?", opts: ["Escrever menos código Python", "Substituir o HTML", "Evitar escrever SQL puro (trabalhar com objetos Python)", "Melhorar o front-end"], a: 2 },
+                    { q: "Qual ORM é nativo e totalmente integrado ao framework Django?", opts: ["SQLAlchemy", "PonyORM", "Django ORM", "Peewee"], a: 2 },
+                    { q: "O que o ORM mapeia?", opts: ["Funções para rotas", "Objetos Python para linhas do banco de dados", "Strings para inteiros", "Módulos para pacotes"], a: 1 },
+                    { q: "No SQLAlchemy, qual objeto é usado para persistir e recuperar dados (fazer consultas)?", opts: ["`Engine`", "`Base`", "`Session`", "`Column`"], a: 2 },
+                    { q: "Qual comando em um ORM do Django você usaria para criar um novo registro no banco?", opts: ["`User.save()`", "`User.create()` (ou `objects.create()`)", "`db.insert(User)`", "`User.new()`"], a: 1 },
+                    { q: "No contexto de ORMs, o que é uma 'migração'?", opts: ["Mover o banco para outro servidor", "Atualizar a documentação", "Gerar arquivos que descrevem mudanças na estrutura do banco de dados (tabelas)", "Mudar a linguagem de programação"], a: 2 },
+                    { q: "O Django ORM usa classes Python que herdam de qual classe base?", opts: ["`ORMBase`", "`DatabaseModel`", "`models.Model`", "`SQLModel`"], a: 2 },
+                    { q: "Qual conceito permite que você faça uma consulta usando métodos Python (ex: `User.objects.filter(idade=30)`)?", opts: ["SQL puro", "Gerenciamento de contexto", "QuerySet API (do ORM)", "Decoradores"], a: 2 },
+                    { q: "Qual ORM popular é frequentemente usado com o Flask por ser independente de framework?", opts: ["Django ORM", "PonyORM", "SQLAlchemy", "Tortoise ORM"], a: 2 }
+                ]
+            },
+            "3-5": {
+                learn: `<h3>📚 API RESTful:</h3><ul><li>Construção de APIs seguindo a arquitetura REST.</li><li><strong>Serialização:</strong> Converter objetos Python (Modelos de DB) em formatos de transmissão (JSON) e vice-versa.</li><li>Uso de bibliotecas como <strong>Flask-RESTful</strong> ou <strong>Django REST Framework (DRF)</strong>.</li></ul><h3>💻 Exemplo (Serialização com DRF):</h3><pre>from rest_framework import serializers\nfrom .models import Produto\n\nclass ProdutoSerializer(serializers.ModelSerializer):\n    class Meta:\n        model = Produto\n        fields = ['id', 'nome', 'preco']\n\n# serializer = ProdutoSerializer(produto_obj)\n# json_data = serializer.data # Retorna JSON</pre>`,
+                test: [
+                    { q: "Qual é o formato de dados mais comum usado para troca de informações em APIs RESTful?", opts: ["XML", "HTML", "JSON", "CSV"], a: 2 },
+                    { q: "O processo de converter objetos complexos (ex: um Model do Django) em uma string JSON é chamado de:", opts: ["Deserialização", "Serialização", "Mapping", "Converting"], a: 1 },
+                    { q: "Qual biblioteca popular é usada para facilitar a criação de APIs REST no Django?", opts: ["Flask-RESTful", "Django REST Framework (DRF)", "Django-ORM", "requests"], a: 1 },
+                    { q: "O que o processo de Desserialização faz?", opts: ["Transforma JSON em objetos Python", "Transforma objetos Python em JSON", "Criptografa os dados", "Envia requisições HTTP"], a: 0 },
+                    { q: "Qual código de status HTTP é tipicamente retornado após uma criação bem-sucedida (POST)?", opts: ["200 OK", "400 Bad Request", "201 Created", "302 Found"], a: 2 },
+                    { q: "Em REST, um Endpoint deve idealmente representar um(a) _____.", opts: ["Função", "Ponto de partida", "Recurso", "Servidor"], a: 2 },
+                    { q: "Qual o método HTTP usado para atualizar parcialmente um recurso?", opts: ["PUT", "POST", "GET", "PATCH"], a: 3 },
+                    { q: "O que as classes `Serializer` fazem em frameworks como DRF?", opts: ["Renderizam templates HTML", "Validam e convertem dados entre formatos complexos e nativos Python", "Gerenciam rotas", "Lidam com o banco de dados"], a: 1 },
+                    { q: "Qual header HTTP é comumente usado para especificar o formato de dados que o cliente espera na resposta (ex: `application/json`)?", opts: ["Content-Type", "Authorization", "User-Agent", "Accept"], a: 3 },
+                    { q: "Qual o resultado de um Serializer não passar na validação de dados?", opts: ["Gera uma exceção HTTP 404", "Retorna um objeto com erros de validação", "O dado é salvo mesmo assim", "É enviado para o banco de dados"], a: 1 }
+                ]
+            },
+            "3-6": {
+                learn: `<h3>📚 Autenticação:</h3><ul><li><strong>Sessões:</strong> Armazenar estado do usuário no servidor (mais comum no Django Web).</li><li><strong>JWT (JSON Web Tokens):</strong> Tokens de acesso que contêm informações do usuário (mais comum em APIs REST/Mobile).</li><li><strong>OAuth:</strong> Padrão para autorização (ex: "Entrar com Google").</li></ul><h3>💻 Exemplo (Payload JWT):</h3><pre># O token JWT geralmente tem 3 partes:\n# Header (Algoritmo)\n# Payload (Dados do usuário, ex: 'user_id': 1)\n# Signature (Verificação de Integridade)\n\n# Estrutura:\n# header.payload.signature</pre>`,
+                test: [
+                    { q: "Qual método de autenticação é **Stateless** (sem estado) e armazena as informações de identificação diretamente no cliente?", opts: ["Sessões", "OAuth", "JWT (JSON Web Tokens)", "Basic Auth"], a: 2 },
+                    { q: "O que a sigla JWT significa?", opts: ["JavaScript Web Token", "JSON Web Test", "JSON Web Token", "Java Web Transfer"], a: 2 },
+                    { q: "Qual padrão é tipicamente usado para permitir que um usuário faça login em seu site usando suas credenciais de um provedor de terceiros (ex: Google, Facebook)?", opts: ["Sessões", "JWT", "Basic Auth", "OAuth"], a: 3 },
+                    { q: "No token JWT, qual componente garante a **integridade** (que o token não foi alterado)?", opts: ["Header", "Payload", "Signature", "Issuer"], a: 2 },
+                    { q: "Em autenticação baseada em Sessões, onde as informações de estado do usuário são armazenadas?", opts: ["No cookie do cliente (apenas ID da sessão)", "Na URL", "No servidor (armazenamento de sessão)", "No cabeçalho HTTP"], a: 2 },
+                    { q: "O que o Payload de um token JWT contém?", opts: ["A senha do usuário", "A chave secreta do servidor", "As 'Claims' (dados do usuário e metadata)", "A URL de redirecionamento"], a: 2 },
+                    { q: "Qual header HTTP é usado para enviar o JWT em uma requisição (tipicamente prefixado com 'Bearer')?", opts: ["Content-Type", "Host", "Authorization", "Accept"], a: 2 },
+                    { q: "Qual o principal risco de armazenar o JWT no Local Storage do navegador?", opts: ["Cross-Site Scripting (XSS)", "CSRF", "Cross-Site Request Forgery", "Phishing"], a: 0 },
+                    { q: "O que significa dizer que a autenticação baseada em Sessões é 'Stateful'?", opts: ["Não armazena dados", "O servidor precisa manter e verificar o estado da sessão", "O cliente armazena o estado", "É mais rápido que JWT"], a: 1 },
+                    { q: "Qual dos seguintes não é um pilar da segurança (Autenticação, Autorização e _____)?", opts: ["Integridade", "Criptografia", "Disponibilidade", "Transparência"], a: 3 }
+                ]
+            },
+            "3-7": {
+                learn: `<h3>📚 Testes de API:</h3><ul><li><strong>Testes Unitários:</strong> Testa uma pequena parte (função, classe) isoladamente.</li><li><strong>Testes de Integração:</strong> Verifica se diferentes partes do sistema (API, DB, serviços externos) funcionam juntas.</li><li>Usar <code>pytest</code> ou o módulo de teste nativo do framework (ex: <code>django.test.TestCase</code>).</li></ul><h3>💻 Exemplo (Testes de Integração Flask):</h3><pre>def test_api_status(client):\n    # 'client' é um mock do Flask para fazer requests internos\n    response = client.get('/api/v1/health')\n    assert response.status_code == 200\n    assert response.json['status'] == 'ok'</pre>`,
+                test: [
+                    { q: "Qual o foco principal dos **Testes Unitários** no backend?", opts: ["O fluxo completo do usuário", "Integração do banco de dados", "Validar a lógica de funções/métodos isolados", "Verificar o HTML"], a: 2 },
+                    { q: "O que os **Testes de Integração** verificam?", opts: ["Apenas o código", "Apenas o banco", "A interação correta entre múltiplos componentes (ex: View e Model)", "Apenas erros de sintaxe"], a: 2 },
+                    { q: "Em testes de API, a asserção `assert response.status_code == 200` verifica:", opts: ["Erro de servidor", "Sucesso na requisição HTTP", "Tempo de resposta", "Tipo de conteúdo"], a: 1 },
+                    { q: "Qual objeto do Flask é usado em testes para simular requisições HTTP internas sem rodar um servidor real?", opts: ["`app`", "`request`", "`client`", "`response`"], a: 2 },
+                    { q: "Ao testar uma rota POST de criação, qual código de status é idealmente esperado?", opts: ["200", "204", "400", "201"], a: 3 },
+                    { q: "O que é um 'stub' em testes?", opts: ["Um tipo de `assert`", "Um objeto que simula o comportamento básico de uma dependência para evitar chamadas reais", "Um erro comum", "Um teste de carga"], a: 1 },
+                    { q: "Em Django, a classe base para escrever testes é tipicamente:", opts: ["`TestCase`", "`APITestCase`", "`TestRunner`", "`IntegrationTest`"], a: 0 },
+                    { q: "O que é o 'Arrange-Act-Assert' (AAA) pattern?", opts: ["Um padrão de design de software", "As etapas de deploy", "Um padrão de organização de testes unitários", "Um tipo de polimorfismo"], a: 2 },
+                    { q: "Qual tipo de teste deve ser executado **depois** dos testes unitários?", opts: ["Testes de performance", "Testes de aceitação", "Testes de integração", "Testes de segurança"], a: 2 },
+                    { q: "O que um teste de regressão verifica?", opts: ["Se o código novo funciona", "Se o código antigo continua funcionando após mudanças", "O desempenho", "A usabilidade"], a: 1 }
+                ]
+            },
+            "3-8": {
+                learn: `<h3>📚 Deploy:</h3><ul><li><strong>Docker:</strong> Ferramenta para empacotar a aplicação e suas dependências em um contêiner (garante que funciona em qualquer ambiente).</li><li><strong>Gunicorn/uWSGI:</strong> Servidores de aplicação Python que servem o aplicativo WSGI/ASGI (necessários em produção).</li><li><strong>Cloud Services:</strong> Plataformas de hospedagem (Heroku, AWS, Google Cloud, Azure).</li></ul><h3>💻 Exemplo (Dockerfile Básico):</h3><pre># Usa a imagem oficial do Python\nFROM python:3.9-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\n# Comando para rodar com Gunicorn\nCMD ["gunicorn", "app:app"]</pre>`,
+                test: [
+                    { q: "Qual ferramenta empacota a aplicação e suas dependências em um contêiner isolado?", opts: ["pip", "venv", "Gunicorn", "Docker"], a: 3 },
+                    { q: "Qual o papel do **Gunicorn** ou **uWSGI** em produção?", opts: ["Gerenciar pacotes", "Servir a aplicação WSGI/ASGI (Servidor de Aplicação Python)", "Criar o ambiente virtual", "Fazer o deploy automático"], a: 1 },
+                    { q: "O que o comando `FROM python:3.9-slim` em um Dockerfile faz?", opts: ["Instala o Python no sistema host", "Define a imagem base para o contêiner", "Baixa as dependências", "Executa o servidor"], a: 1 },
+                    { q: "O que o comando `CMD` faz em um Dockerfile?", opts: ["Copia arquivos", "Executa o comando principal quando o contêiner inicia", "Define o diretório de trabalho", "Instala pacotes"], a: 1 },
+                    { q: "Qual serviço de nuvem é conhecido por ser uma plataforma 'Platform as a Service' (PaaS) que facilita o deploy?", opts: ["AWS EC2", "Docker Hub", "Heroku", "Google Compute Engine"], a: 2 },
+                    { q: "Qual o nome do arquivo que lista as dependências Python para o `pip` instalar?", opts: ["`package.json`", "`setup.py`", "`requirements.txt`", "`config.yaml`"], a: 2 },
+                    { q: "Por que um servidor de aplicação (como Gunicorn) é necessário, e não apenas o servidor de desenvolvimento do Flask/Django?", opts: ["O servidor de desenvolvimento é muito rápido", "O servidor de desenvolvimento não é seguro nem performático para produção", "O Gunicorn é mais fácil de configurar", "O Gunicorn não precisa de dependências"], a: 1 },
+                    { q: "Qual tecnologia é usada para orquestrar e gerenciar múltiplos contêineres Docker em larga escala?", opts: ["Docker Compose", "Docker Swarm ou Kubernetes", "Git", "Ansible"], a: 1 },
+                    { q: "O que o comando `docker build . -t myapp` faz?", opts: ["Inicia o contêiner", "Baixa a imagem base", "Constrói uma imagem Docker e a marca com a tag 'myapp'", "Apaga a imagem"], a: 2 },
+                    { q: "O que a instrução `WORKDIR /app` no Dockerfile faz?", opts: ["Cria a pasta `/app` na máquina host", "Define o diretório de trabalho dentro do contêiner", "Roda a aplicação no diretório raiz", "Copia o código para o contêiner"], a: 1 }
+                ]
+            }
+        };
+
+        let currentTestKey = null;
+        let userAnswers = [];
+        let currentTestStructure = []; 
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * Inicializa o Roadmap, criando as abas de navegação e os conteúdos de cada nível.
+         */
+        function initRoadmap() {
+            const roadmapDiv = document.getElementById('roadmap');
+            const tabsContainer = document.getElementById('tabsContainer');
+            const savedProgress = JSON.parse(localStorage.getItem('pythonProgress') || '{}');
+
+            roadmapData.forEach((level, levelIdx) => {
+                // 1. Cria o botão da aba
+                const completed = level.topics.filter((_, i) => savedProgress[`${levelIdx}-${i}`]).length;
+                const tabButton = document.createElement('button');
+                tabButton.className = 'tab-button';
+                tabButton.textContent = `${level.icon} ${level.level} (${completed}/${level.topics.length})`;
+                tabButton.setAttribute('data-level-index', levelIdx);
+                tabButton.onclick = () => showLevel(levelIdx);
+                tabsContainer.appendChild(tabButton);
+
+                // 2. Cria o container do conteúdo do nível (a "tela" do bloco)
+                const levelContentDiv = document.createElement('div');
+                levelContentDiv.className = 'level-content';
+                levelContentDiv.id = `level-content-${levelIdx}`;
+                
+                // 3. Cria o conteúdo interno do bloco (o .level, que agora é o container de tópicos)
+                const levelDiv = document.createElement('div');
+                levelDiv.className = 'level'; // Mantém o estilo de card do nível
+                levelDiv.style.animationDelay = `${levelIdx * 0.1}s`;
+
+                levelDiv.innerHTML = `
+                    <div class="level-header">
+                        <div class="level-title">
+                            <span class="level-icon">${level.icon}</span>
+                            ${level.level}
+                        </div>
+                        <div class="level-progress">${completed}/${level.topics.length}</div>
+                    </div>
+                `;
+
+                // 4. Cria os tópicos dentro do bloco
+                level.topics.forEach((topic, topicIdx) => {
+                    const topicDiv = document.createElement('div');
+                    topicDiv.className = 'topic';
+                    const key = `${levelIdx}-${topicIdx}`;
+                    
+                    if (savedProgress[key]) topicDiv.classList.add('completed');
+
+                    const hasContent = topicContent[key];
+
+                    topicDiv.innerHTML = `
+                        <div class="topic-header">
+                            <div class="checkbox">
+                                <span class="checkmark">✓</span>
+                            </div>
+                            <div class="topic-title">${topic.title}</div>
+                        </div>
+                        <div class="topic-description">${topic.description}</div>
+                        ${hasContent ? `
+                        <div class="topic-buttons">
+                            <button class="info-btn" onclick="showInfo('${key}')">📖 Aprender</button>
+                            <button class="test-btn-small" onclick="showTest('${key}')">✅ Fazer Teste</button>
+                        </div>
+                        ` : ''}
+                    `;
+
+                    // O evento deve ser no .topic inteiro, mas paramos a propagação nos botões
+                    topicDiv.querySelector('.topic-header').onclick = (e) => toggleTopic(e, topicDiv, key, levelIdx);
+                    levelDiv.appendChild(topicDiv);
+                });
+
+                levelContentDiv.appendChild(levelDiv);
+                roadmapDiv.appendChild(levelContentDiv);
+            });
+
+            updateProgress();
+            // Mostra o primeiro nível por padrão
+            showLevel(0); 
+        }
+
+        /**
+         * Controla a exibição do nível (aba) selecionado.
+         */
+        function showLevel(levelIdx) {
+            // Esconde todos os conteúdos
+            document.querySelectorAll('.level-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove o estado ativo de todos os botões
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Mostra o conteúdo selecionado
+            const activeContent = document.getElementById(`level-content-${levelIdx}`);
+            if (activeContent) {
+                activeContent.classList.add('active');
+            }
+
+            // Ativa o botão correspondente
+            const activeButton = document.querySelector(`.tab-button[data-level-index="${levelIdx}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+
+
+        function showInfo(key) {
+            event.stopPropagation();
+            const content = topicContent[key];
+            if (!content) return;
+
+            const [levelIdx, topicIdx] = key.split('-');
+            const topicTitle = roadmapData[levelIdx].topics[topicIdx].title;
+
+            document.getElementById('modalBody').innerHTML = `
+                <h2>📖 Conteúdo de Estudo: ${topicTitle}</h2>
+                ${content.learn}
+                <div class="test-section">
+                    <h3>✅ Pronto para testar seus conhecimentos?</h3>
+                    <p>Faça o teste de 10 questões para marcar este tópico como concluído!</p>
+                    <button class="start-test-btn" onclick="showTest('${key}')">Iniciar Teste</button>
+                </div>
+            `;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function showTest(key) {
+            event.stopPropagation();
+            const content = topicContent[key];
+            if (!content) return;
+
+            currentTestKey = key;
+            currentTestStructure = []; 
+
+            const shuffledQuestions = shuffleArray([...content.test]);
+            userAnswers = new Array(shuffledQuestions.length).fill(null);
+            
+            const [levelIdx, topicIdx] = key.split('-');
+            const topicTitle = roadmapData[levelIdx].topics[topicIdx].title;
+
+
+            let html = `
+                <h2>✅ Teste de Conhecimento: ${topicTitle} (10 Questões)</h2>
+                <p style="margin-bottom: 20px;">Responda todas as questões e clique em "Enviar" para ver o resultado.</p>
+            `;
+
+            shuffledQuestions.forEach((q, qIdx) => {
+                const originalCorrectIndex = q.a;
+                
+                const optionsWithOriginalIndex = q.opts.map((text, originalIdx) => ({ text, originalIdx }));
+
+                const shuffledOptions = shuffleArray(optionsWithOriginalIndex);
+
+                const newCorrectIndex = shuffledOptions.findIndex(opt => opt.originalIdx === originalCorrectIndex);
+
+                currentTestStructure.push({
+                    questionText: q.q,
+                    options: shuffledOptions.map(opt => opt.text),
+                    correctIndex: newCorrectIndex 
+                });
+
+                html += `
+                    <div class="question">
+                        <div class="question-text">${qIdx + 1}. ${q.q}</div>
+                        ${shuffledOptions.map((opt, optIdx) => `
+                            <div class="option" onclick="selectOption(${qIdx}, ${optIdx})">
+                                ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+
+            html += `<button class="submit-test-btn" onclick="submitTest()">📝 Enviar Respostas</button>`;
+
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function selectOption(questionIdx, optionIdx) {
+            userAnswers[questionIdx] = optionIdx;
+            
+            const question = document.querySelectorAll('.question')[questionIdx];
+            question.querySelectorAll('.option').forEach((opt, idx) => {
+                opt.classList.toggle('selected', idx === optionIdx);
+            });
+        }
+
+        function submitTest() {
+            if (userAnswers.includes(null)) {
+                alert('Por favor, responda todas as questões!');
+                return;
+            }
+
+            let correct = 0;
+
+            currentTestStructure.forEach((qData, idx) => {
+                const questionElement = document.querySelectorAll('.question')[idx];
+                const optionsElements = questionElement.querySelectorAll('.option');
+                const userSelection = userAnswers[idx];
+                const correctIndex = qData.correctIndex; 
+                
+                optionsElements.forEach((opt, optIdx) => {
+                    opt.onclick = null;
+                    opt.style.cursor = 'default';
+                    
+                    if (optIdx === correctIndex) {
+                        opt.classList.add('correct');
+                    } else if (optIdx === userSelection) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+
+                if (userSelection === correctIndex) correct++;
+            });
+
+            const percentage = (correct / currentTestStructure.length) * 100;
+            const passed = percentage >= 70;
+
+            let resultHTML = `
+                <div class="test-result ${passed ? 'pass' : 'fail'}">
+                    ${passed ? '🎉 Parabéns!' : '😔 Ops!'}<br>
+                    Você acertou ${correct} de ${currentTestStructure.length} questões (${percentage.toFixed(0)}%)
+                    ${passed ? 
+                        '<br><br>Tópico marcado como concluído! ✅' : 
+                        '<br><br>Estude mais e tente novamente. Precisa de 70% para passar.'}
+                </div>
+            `;
+
+            document.querySelector('.submit-test-btn').style.display = 'none';
+            document.getElementById('modalBody').insertAdjacentHTML('beforeend', resultHTML);
+
+            if (passed) {
+                setTimeout(() => {
+                    markTopicComplete(currentTestKey);
+                    closeModal();
+                }, 2000);
+            }
+        }
+
+        function markTopicComplete(key) {
+            const savedProgress = JSON.parse(localStorage.getItem('pythonProgress') || '{}');
+            savedProgress[key] = true;
+            localStorage.setItem('pythonProgress', JSON.stringify(savedProgress));
+            
+            // Recarrega a página para atualizar o progresso (incluindo o contador do nível)
+            location.reload(); 
+        }
+        
+        function toggleTopic(e, element, key, levelIdx) {
+            e.stopPropagation(); 
+            
+            const savedProgress = JSON.parse(localStorage.getItem('pythonProgress') || '{}');
+            
+            if (savedProgress[key]) {
+                 delete savedProgress[key];
+                 element.classList.remove('completed');
+             } else {
+                 savedProgress[key] = true;
+                 element.classList.add('completed');
+             }
+
+            localStorage.setItem('pythonProgress', JSON.stringify(savedProgress));
+            updateProgress();
+            updateLevelProgress(levelIdx);
+        }
+
+        function updateProgress() {
+            const savedProgress = JSON.parse(localStorage.getItem('pythonProgress') || '{}');
+            const totalTopics = roadmapData.reduce((sum, level) => sum + level.topics.length, 0);
+            const completedTopics = Object.keys(savedProgress).length;
+            const percentage = Math.round((completedTopics / totalTopics) * 100);
+
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '%';
+        }
+
+        function updateLevelProgress(levelIdx) {
+            const savedProgress = JSON.parse(localStorage.getItem('pythonProgress') || '{}');
+            const level = roadmapData[levelIdx];
+            const completed = level.topics.filter((_, i) => savedProgress[`${levelIdx}-${i}`]).length;
+
+            const levelElement = document.getElementById(`level-content-${levelIdx}`).querySelector('.level');
+            const progressElement = levelElement.querySelector('.level-progress');
+            progressElement.textContent = `${completed}/${level.topics.length}`;
+
+            // Atualiza o texto do botão da aba
+            const tabButton = document.querySelector(`.tab-button[data-level-index="${levelIdx}"]`);
+             if (tabButton) {
+                tabButton.textContent = `${level.icon} ${level.level} (${completed}/${level.topics.length})`;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function resetProgress() {
+            if (confirm('Tem certeza que deseja resetar todo o progresso?')) {
+                localStorage.removeItem('pythonProgress');
+                location.reload();
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        initRoadmap();
+    </script>
+</body>
+</html>
